@@ -490,6 +490,14 @@ function App() {
       return;
     }
     
+    // Validation spéciale pour vente d'animaux
+    if (financialFormData.type_transaction === 'recette' && 
+        financialFormData.categorie === 'vente' && 
+        !financialFormData.animal_id) {
+      alert('Veuillez sélectionner l\'animal vendu');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -513,6 +521,27 @@ function App() {
       });
 
       if (response.ok) {
+        // Si c'est une vente d'animal, marquer l'animal comme vendu
+        if (financialFormData.type_transaction === 'recette' && 
+            financialFormData.categorie === 'vente' && 
+            financialFormData.animal_id) {
+          
+          const sellResponse = await fetch(`${API_BASE_URL}/api/animals/${financialFormData.animal_id}/sell`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prix_vente: parseFloat(financialFormData.montant),
+              date_vente: financialFormData.date_transaction
+            }),
+          });
+          
+          if (!sellResponse.ok) {
+            console.error('Erreur lors de la mise à jour du statut de l\'animal');
+          }
+        }
+        
         setShowAddFinancialForm(false);
         setFinancialFormData({
           type_transaction: 'depense',
@@ -526,7 +555,16 @@ function App() {
         });
         
         await fetchFinancialStats();
-        alert('Transaction financière ajoutée avec succès !');
+        await fetchAnimals(); // Refresh animals list
+        await fetchStats(); // Refresh stats
+        
+        if (financialFormData.type_transaction === 'recette' && 
+            financialFormData.categorie === 'vente' && 
+            financialFormData.animal_id) {
+          alert('Vente enregistrée avec succès ! L\'animal a été marqué comme vendu et retiré du cheptel actif.');
+        } else {
+          alert('Transaction financière ajoutée avec succès !');
+        }
       } else {
         const errorData = await response.json();
         alert(`Erreur lors de l'ajout: ${errorData.detail || 'Erreur inconnue'}`);

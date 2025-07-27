@@ -351,6 +351,22 @@ function App() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        
+        // Si c'est une mise bas avec des petits vivants, proposer de les ajouter au cheptel
+        if (reproductionFormData.type_event === 'mise_bas' && 
+            reproductionFormData.nombre_petits_vivants && 
+            parseInt(reproductionFormData.nombre_petits_vivants) > 0) {
+          
+          const shouldAddBabies = window.confirm(
+            `Voulez-vous ajouter les ${reproductionFormData.nombre_petits_vivants} petit(s) vivant(s) au cheptel automatiquement ?`
+          );
+          
+          if (shouldAddBabies) {
+            await addBabiesToHerd();
+          }
+        }
+        
         setShowAddReproductionForm(false);
         setReproductionFormData({
           type_event: '',
@@ -366,6 +382,8 @@ function App() {
         
         await fetchReproductionEvents(selectedAnimalForReproduction.id);
         await fetchUpcomingBirths();
+        await fetchAnimals(); // Refresh main list
+        await fetchStats(); // Refresh stats
         
         alert('Événement reproductif ajouté avec succès !');
       } else {
@@ -377,6 +395,40 @@ function App() {
       alert('Erreur de connexion. Veuillez réessayer.');
     }
     setLoading(false);
+  };
+
+  const addBabiesToHerd = async () => {
+    try {
+      const nombrePetits = parseInt(reproductionFormData.nombre_petits_vivants);
+      const poidsMoyen = reproductionFormData.poids_moyen_petits ? 
+        parseFloat(reproductionFormData.poids_moyen_petits) : 
+        (selectedAnimalForReproduction.type === 'poulet' ? 0.05 : 1.5); // Poids par défaut
+        
+      for (let i = 1; i <= nombrePetits; i++) {
+        const babyData = {
+          type: selectedAnimalForReproduction.type,
+          race: selectedAnimalForReproduction.race,
+          sexe: i % 2 === 0 ? 'M' : 'F', // Alternance mâle/femelle
+          date_naissance: reproductionFormData.date_event,
+          poids: poidsMoyen,
+          nom: `Petit ${i} de ${selectedAnimalForReproduction.nom || selectedAnimalForReproduction.id.slice(-4)}`,
+          notes: `Né de ${selectedAnimalForReproduction.nom || 'mère ' + selectedAnimalForReproduction.id.slice(-4)}`
+        };
+        
+        await fetch(`${API_BASE_URL}/api/animals`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(babyData),
+        });
+      }
+      
+      alert(`${nombrePetits} petit(s) ajouté(s) au cheptel avec succès !`);
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout des petits:', error);
+      alert('Erreur lors de l\'ajout des petits au cheptel');
+    }
   };
 
   const handleClickReminder = async (reminder) => {

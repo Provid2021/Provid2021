@@ -741,6 +741,7 @@ const Home = () => {
               animal={animal}
               onEdit={() => alert('Fonctionnalité Modifier à venir')}
               onDelete={deleteAnimal}
+              onSell={sellAnimal}
             />
           ))}
         </div>

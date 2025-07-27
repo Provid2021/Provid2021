@@ -1127,6 +1127,157 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Reminder Completion Modal */}
+      {showReminderModal && selectedReminder && selectedAnimalForMedical && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-[110]">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  ⚠️ Effectuer le rappel médical
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowReminderModal(false);
+                    setSelectedReminder(null);
+                    setSelectedAnimalForMedical(null);
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Original reminder info */}
+              <div className="bg-amber-50 p-4 rounded-lg mb-4 border border-amber-200">
+                <h4 className="font-medium text-amber-800 mb-2">Rappel programmé :</h4>
+                <div className="text-sm text-amber-700">
+                  <p><strong>Animal:</strong> {selectedAnimalForMedical.nom || `${selectedAnimalForMedical.type} #${selectedAnimalForMedical.id.slice(-4)}`}</p>
+                  <p><strong>Type:</strong> {selectedReminder.type_intervention}</p>
+                  <p><strong>Date prévue:</strong> {formatDate(selectedReminder.date_rappel)}</p>
+                  {selectedReminder.medicament && <p><strong>Médicament prévu:</strong> {selectedReminder.medicament}</p>}
+                  {selectedReminder.notes && <p><strong>Notes originales:</strong> {selectedReminder.notes}</p>}
+                </div>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg mb-4 border-l-4 border-green-400">
+                <h4 className="font-medium text-green-800 mb-2">📝 Enregistrer le soin effectué :</h4>
+                <p className="text-sm text-green-700">Remplissez les informations du traitement que vous venez d'effectuer</p>
+              </div>
+              
+              <form onSubmit={handleCompleteReminder} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date d'intervention *</label>
+                    <input
+                      type="date"
+                      value={medicalFormData.date_intervention}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, date_intervention: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Type d'intervention *</label>
+                    <select
+                      value={medicalFormData.type_intervention}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, type_intervention: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      required
+                    >
+                      <option value="">Sélectionnez un type</option>
+                      {TYPES_INTERVENTION.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Médicament utilisé</label>
+                    <input
+                      type="text"
+                      value={medicalFormData.medicament}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, medicament: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder="Nom du médicament utilisé"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Vétérinaire</label>
+                    <input
+                      type="text"
+                      value={medicalFormData.veterinaire}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, veterinaire: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder="Nom du vétérinaire"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Coût (€)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={medicalFormData.cout}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, cout: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Prochain rappel (optionnel)</label>
+                    <input
+                      type="date"
+                      value={medicalFormData.date_rappel}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, date_rappel: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes du traitement</label>
+                  <textarea
+                    value={medicalFormData.notes}
+                    onChange={(e) => setMedicalFormData({...medicalFormData, notes: e.target.value})}
+                    rows="3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder="Observations, réactions, dosage effectué..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReminderModal(false);
+                      setSelectedReminder(null);
+                      setSelectedAnimalForMedical(null);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    disabled={loading}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !medicalFormData.date_intervention || !medicalFormData.type_intervention}
+                    className="px-6 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Validation...' : '✅ Valider le rappel effectué'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

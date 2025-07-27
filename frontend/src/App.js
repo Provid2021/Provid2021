@@ -706,7 +706,7 @@ const FilterSection = ({ filters, onFilterChange, animals }) => {
   );
 };
 
-// Main Home Component avec fonctionnalité d'ajout
+// Main Home Component avec fonctionnalité d'ajout et finances
 const Home = () => {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});
@@ -714,6 +714,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isFinancesModalOpen, setIsFinancesModalOpen] = useState(false);
 
   // Fetch data
   const fetchAnimals = async () => {

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 
@@ -15,6 +15,7 @@ client = MongoClient(MONGO_URL)
 db = client.livestock_management
 animals_collection = db.animals
 medical_records_collection = db.medical_records
+reproduction_events_collection = db.reproduction_events
 
 app = FastAPI()
 
@@ -69,6 +70,49 @@ class MedicalRecordUpdate(BaseModel):
     cout: Optional[float] = None
     notes: Optional[str] = None
     date_rappel: Optional[str] = None
+
+class ReproductionEvent(BaseModel):
+    id: Optional[str] = None
+    animal_id: str  # Female animal
+    type_event: str  # "saillie", "insemination", "mise_bas", "sevrage"
+    date_event: str
+    male_id: Optional[str] = None  # Male animal ID for breeding
+    male_info: Optional[str] = None  # External male info if not in system
+    date_prevue_mise_bas: Optional[str] = None
+    nombre_petits_nes: Optional[int] = None
+    nombre_petits_vivants: Optional[int] = None
+    nombre_petits_morts: Optional[int] = None
+    poids_moyen_petits: Optional[float] = None
+    notes: Optional[str] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+class ReproductionEventUpdate(BaseModel):
+    type_event: Optional[str] = None
+    date_event: Optional[str] = None
+    male_id: Optional[str] = None
+    male_info: Optional[str] = None
+    date_prevue_mise_bas: Optional[str] = None
+    nombre_petits_nes: Optional[int] = None
+    nombre_petits_vivants: Optional[int] = None
+    nombre_petits_morts: Optional[int] = None
+    poids_moyen_petits: Optional[float] = None
+    notes: Optional[str] = None
+
+def calculate_birth_date(mating_date: str, animal_type: str) -> str:
+    """Calculate expected birth date based on gestation period"""
+    mating = datetime.strptime(mating_date, "%Y-%m-%d")
+    
+    # Gestation periods in days
+    gestation_periods = {
+        "porc": 114,  # ~3 months, 3 weeks, 3 days
+        "poulet": 21   # 21 days incubation
+    }
+    
+    gestation_days = gestation_periods.get(animal_type, 114)
+    birth_date = mating + timedelta(days=gestation_days)
+    
+    return birth_date.strftime("%Y-%m-%d")
 
 @app.get("/")
 async def root():
@@ -145,8 +189,9 @@ async def delete_animal(animal_id: str):
     try:
         result = animals_collection.delete_one({"id": animal_id})
         if result.deleted_count > 0:
-            # Also delete associated medical records
+            # Also delete associated medical records and reproduction events
             medical_records_collection.delete_many({"animal_id": animal_id})
+            reproduction_events_collection.delete_many({"animal_id": animal_id})
             return {"message": "Animal supprimé avec succès"}
         else:
             raise HTTPException(status_code=404, detail="Animal non trouvé")
@@ -284,6 +329,141 @@ async def get_upcoming_reminders():
                 }
         
         return {"reminders": records, "total": len(records)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+# CRUD endpoints for reproduction events
+@app.post("/api/reproduction-events")
+async def create_reproduction_event(event: ReproductionEvent):
+    try:
+        # Verify animal exists
+        animal = animals_collection.find_one({"id": event.animal_id})
+        if not animal:
+            raise HTTPException(status_code=404, detail="Animal non trouvé")
+        
+        # Verify animal is female for breeding events
+        if event.type_event in ["saillie", "insemination"] and animal["sexe"] != "F":
+            raise HTTPException(status_code=400, detail="Seules les femelles peuvent être saillies/inséminées")
+        
+        event_dict = event.dict()
+        event_dict["id"] = str(uuid.uuid4())
+        event_dict["created_at"] = datetime.now().isoformat()
+        event_dict["updated_at"] = datetime.now().isoformat()
+        
+        # Auto-calculate birth date for breeding events
+        if event.type_event in ["saillie", "insemination"] and not event.date_prevue_mise_bas:
+            event_dict["date_prevue_mise_bas"] = calculate_birth_date(event.date_event, animal["type"])
+        
+        result = reproduction_events_collection.insert_one(event_dict)
+        
+        if result.inserted_id:
+            return {"message": "Événement reproductif créé avec succès", "id": event_dict["id"]}
+        else:
+            raise HTTPException(status_code=500, detail="Erreur lors de la création")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.get("/api/reproduction-events/{animal_id}")
+async def get_reproduction_events(animal_id: str):
+    try:
+        # Verify animal exists
+        animal = animals_collection.find_one({"id": animal_id})
+        if not animal:
+            raise HTTPException(status_code=404, detail="Animal non trouvé")
+        
+        events = list(reproduction_events_collection.find(
+            {"animal_id": animal_id}, 
+            {"_id": 0}
+        ).sort("date_event", -1))  # Sort by date, newest first
+        
+        # Enrich with male animal information if available
+        for event in events:
+            if event.get("male_id"):
+                male_animal = animals_collection.find_one({"id": event["male_id"]}, {"_id": 0})
+                if male_animal:
+                    event["male_animal_info"] = {
+                        "nom": male_animal.get("nom", f"{male_animal['type']} #{male_animal['id'][-4:]}"),
+                        "race": male_animal["race"]
+                    }
+        
+        return {"reproduction_events": events, "total": len(events)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.put("/api/reproduction-events/{event_id}")
+async def update_reproduction_event(event_id: str, update_data: ReproductionEventUpdate):
+    try:
+        event = reproduction_events_collection.find_one({"id": event_id})
+        if not event:
+            raise HTTPException(status_code=404, detail="Événement reproductif non trouvé")
+        
+        update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
+        update_dict["updated_at"] = datetime.now().isoformat()
+        
+        result = reproduction_events_collection.update_one(
+            {"id": event_id},
+            {"$set": update_dict}
+        )
+        
+        if result.modified_count > 0:
+            return {"message": "Événement reproductif mis à jour avec succès"}
+        else:
+            return {"message": "Aucune modification effectuée"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.delete("/api/reproduction-events/{event_id}")
+async def delete_reproduction_event(event_id: str):
+    try:
+        result = reproduction_events_collection.delete_one({"id": event_id})
+        if result.deleted_count > 0:
+            return {"message": "Événement reproductif supprimé avec succès"}
+        else:
+            raise HTTPException(status_code=404, detail="Événement reproductif non trouvé")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.get("/api/reproduction-events/upcoming-births")
+async def get_upcoming_births():
+    try:
+        from datetime import datetime, timedelta
+        
+        # Get births expected in the next 30 days
+        today = datetime.now()
+        thirty_days_later = today + timedelta(days=30)
+        
+        events = list(reproduction_events_collection.find({
+            "type_event": {"$in": ["saillie", "insemination"]},
+            "date_prevue_mise_bas": {
+                "$gte": today.strftime("%Y-%m-%d"),
+                "$lte": thirty_days_later.strftime("%Y-%m-%d")
+            }
+        }, {"_id": 0}).sort("date_prevue_mise_bas", 1))
+        
+        # Enrich with animal information
+        for event in events:
+            animal = animals_collection.find_one({"id": event["animal_id"]}, {"_id": 0})
+            if animal:
+                event["animal_info"] = {
+                    "nom": animal.get("nom", f"{animal['type']} #{animal['id'][-4:]}"),
+                    "type": animal["type"],
+                    "race": animal["race"]
+                }
+        
+        return {"upcoming_births": events, "total": len(events)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.get("/api/animals/breeding-males/{animal_type}")
+async def get_breeding_males(animal_type: str):
+    try:
+        # Get all male animals of the specified type for breeding selection
+        males = list(animals_collection.find({
+            "type": animal_type,
+            "sexe": "M"
+        }, {"_id": 0}).sort("nom", 1))
+        
+        return {"breeding_males": males, "total": len(males)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 

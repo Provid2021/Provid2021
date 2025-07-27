@@ -43,6 +43,14 @@ const TYPES_INTERVENTION = [
   'Autre'
 ];
 
+// Types d'événements reproductifs
+const TYPES_REPRODUCTION = [
+  'saillie',
+  'insemination',
+  'mise_bas',
+  'sevrage'
+];
+
 function App() {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});
@@ -59,6 +67,14 @@ function App() {
   const [upcomingReminders, setUpcomingReminders] = useState([]);
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [selectedReminder, setSelectedReminder] = useState(null);
+
+  // Reproduction states
+  const [showReproductionHistory, setShowReproductionHistory] = useState(false);
+  const [selectedAnimalForReproduction, setSelectedAnimalForReproduction] = useState(null);
+  const [reproductionEvents, setReproductionEvents] = useState([]);
+  const [showAddReproductionForm, setShowAddReproductionForm] = useState(false);
+  const [upcomingBirths, setUpcomingBirths] = useState([]);
+  const [breedingMales, setBreedingMales] = useState([]);
 
   const [formData, setFormData] = useState({
     type: 'poulet',
@@ -81,10 +97,23 @@ function App() {
     date_rappel: ''
   });
 
+  const [reproductionFormData, setReproductionFormData] = useState({
+    type_event: '',
+    date_event: '',
+    male_id: '',
+    male_info: '',
+    nombre_petits_nes: '',
+    nombre_petits_vivants: '',
+    nombre_petits_morts: '',
+    poids_moyen_petits: '',
+    notes: ''
+  });
+
   useEffect(() => {
     fetchAnimals();
     fetchStats();
     fetchUpcomingReminders();
+    fetchUpcomingBirths();
   }, [filterType]);
 
   const fetchAnimals = async () => {
@@ -122,6 +151,16 @@ function App() {
     }
   };
 
+  const fetchUpcomingBirths = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reproduction-events/upcoming-births`);
+      const data = await response.json();
+      setUpcomingBirths(data.upcoming_births || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des naissances prévues:', error);
+    }
+  };
+
   const fetchMedicalRecords = async (animalId) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/medical-records/${animalId}`);
@@ -129,6 +168,26 @@ function App() {
       setMedicalRecords(data.medical_records || []);
     } catch (error) {
       console.error('Erreur lors du chargement de l\'historique médical:', error);
+    }
+  };
+
+  const fetchReproductionEvents = async (animalId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/reproduction-events/${animalId}`);
+      const data = await response.json();
+      setReproductionEvents(data.reproduction_events || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique reproductif:', error);
+    }
+  };
+
+  const fetchBreedingMales = async (animalType) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/animals/breeding-males/${animalType}`);
+      const data = await response.json();
+      setBreedingMales(data.breeding_males || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des mâles reproducteurs:', error);
     }
   };
 
@@ -248,41 +307,70 @@ function App() {
     setLoading(false);
   };
 
-  const handleEdit = (animal) => {
-    setSelectedAnimal(animal);
-    setFormData({
-      type: animal.type,
-      race: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? animal.race : 'Autre',
-      raceAutre: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? '' : animal.race,
-      sexe: animal.sexe,
-      date_naissance: animal.date_naissance,
-      poids: animal.poids.toString(),
-      nom: animal.nom || '',
-      notes: animal.notes || ''
-    });
-    setShowAddForm(true);
-  };
-
-  const handleDelete = async (animalId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet animal et tout son historique médical ?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/animals/${animalId}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          fetchAnimals();
-          fetchStats();
-        }
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-      }
+  const handleReproductionSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!reproductionFormData.type_event || !reproductionFormData.date_event) {
+      alert('Veuillez remplir les champs obligatoires (Type d\'événement et Date)');
+      return;
     }
-  };
+    
+    if (!selectedAnimalForReproduction) {
+      alert('Erreur: Aucun animal sélectionné');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const submitData = {
+        animal_id: selectedAnimalForReproduction.id,
+        type_event: reproductionFormData.type_event,
+        date_event: reproductionFormData.date_event,
+        male_id: reproductionFormData.male_id || null,
+        male_info: reproductionFormData.male_info ? reproductionFormData.male_info.trim() : null,
+        nombre_petits_nes: reproductionFormData.nombre_petits_nes ? parseInt(reproductionFormData.nombre_petits_nes) : null,
+        nombre_petits_vivants: reproductionFormData.nombre_petits_vivants ? parseInt(reproductionFormData.nombre_petits_vivants) : null,
+        nombre_petits_morts: reproductionFormData.nombre_petits_morts ? parseInt(reproductionFormData.nombre_petits_morts) : null,
+        poids_moyen_petits: reproductionFormData.poids_moyen_petits ? parseFloat(reproductionFormData.poids_moyen_petits) : null,
+        notes: reproductionFormData.notes ? reproductionFormData.notes.trim() : ''
+      };
+      
+      const response = await fetch(`${API_BASE_URL}/api/reproduction-events`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
 
-  const handleShowMedicalHistory = (animal) => {
-    setSelectedAnimalForMedical(animal);
-    setShowMedicalHistory(true);
-    fetchMedicalRecords(animal.id);
+      if (response.ok) {
+        setShowAddReproductionForm(false);
+        setReproductionFormData({
+          type_event: '',
+          date_event: '',
+          male_id: '',
+          male_info: '',
+          nombre_petits_nes: '',
+          nombre_petits_vivants: '',
+          nombre_petits_morts: '',
+          poids_moyen_petits: '',
+          notes: ''
+        });
+        
+        await fetchReproductionEvents(selectedAnimalForReproduction.id);
+        await fetchUpcomingBirths();
+        
+        alert('Événement reproductif ajouté avec succès !');
+      } else {
+        const errorData = await response.json();
+        alert(`Erreur lors de l'ajout: ${errorData.detail || 'Erreur inconnue'}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur de connexion. Veuillez réessayer.');
+    }
+    setLoading(false);
   };
 
   const handleClickReminder = async (reminder) => {
@@ -380,6 +468,50 @@ function App() {
     setLoading(false);
   };
 
+  const handleEdit = (animal) => {
+    setSelectedAnimal(animal);
+    setFormData({
+      type: animal.type,
+      race: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? animal.race : 'Autre',
+      raceAutre: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? '' : animal.race,
+      sexe: animal.sexe,
+      date_naissance: animal.date_naissance,
+      poids: animal.poids.toString(),
+      nom: animal.nom || '',
+      notes: animal.notes || ''
+    });
+    setShowAddForm(true);
+  };
+
+  const handleDelete = async (animalId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet animal et tout son historique médical et reproductif ?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/animals/${animalId}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          fetchAnimals();
+          fetchStats();
+        }
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+      }
+    }
+  };
+
+  const handleShowMedicalHistory = (animal) => {
+    setSelectedAnimalForMedical(animal);
+    setShowMedicalHistory(true);
+    fetchMedicalRecords(animal.id);
+  };
+
+  const handleShowReproductionHistory = (animal) => {
+    setSelectedAnimalForReproduction(animal);
+    setShowReproductionHistory(true);
+    fetchReproductionEvents(animal.id);
+    fetchBreedingMales(animal.type);
+  };
+
   const handleDeleteMedicalRecord = async (recordId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer définitivement cet enregistrement médical ?')) {
       try {
@@ -394,6 +526,29 @@ function App() {
             fetchMedicalRecords(selectedAnimalForMedical.id);
           }
           alert('Enregistrement supprimé avec succès !');
+        } else {
+          alert('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+      }
+    }
+  };
+
+  const handleDeleteReproductionEvent = async (eventId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet événement reproductif ?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/reproduction-events/${eventId}`, {
+          method: 'DELETE',
+        });
+        
+        if (response.ok) {
+          fetchUpcomingBirths();
+          if (selectedAnimalForReproduction) {
+            fetchReproductionEvents(selectedAnimalForReproduction.id);
+          }
+          alert('Événement supprimé avec succès !');
         } else {
           alert('Erreur lors de la suppression');
         }
@@ -430,6 +585,16 @@ function App() {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR');
+  };
+
+  const getEventTypeLabel = (type) => {
+    const labels = {
+      'saillie': 'Saillie',
+      'insemination': 'Insémination',
+      'mise_bas': 'Mise bas',
+      'sevrage': 'Sevrage'
+    };
+    return labels[type] || type;
   };
 
   return (
@@ -591,6 +756,40 @@ function App() {
           </div>
         )}
 
+        {/* Upcoming Births */}
+        {upcomingBirths.length > 0 && (
+          <div className="bg-pink-50 border-l-4 border-pink-400 p-4 mb-8 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-2xl">🍼</span>
+              </div>
+              <div className="ml-3 flex-1">
+                <h3 className="text-lg font-medium text-pink-800">
+                  Naissances prévues ({upcomingBirths.length})
+                </h3>
+                <div className="mt-2 text-sm text-pink-700 space-y-2">
+                  {upcomingBirths.slice(0, 3).map((birth, index) => (
+                    <div key={index} className="bg-white rounded p-3 border border-pink-200">
+                      <div className="font-medium text-gray-900">
+                        <strong>{birth.animal_info?.nom || 'Animal inconnu'}</strong>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Mise bas prévue le {formatDate(birth.date_prevue_mise_bas)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {getEventTypeLabel(birth.type_event)} effectuée le {formatDate(birth.date_event)}
+                      </div>
+                    </div>
+                  ))}
+                  {upcomingBirths.length > 3 && (
+                    <div className="text-xs mt-2">Et {upcomingBirths.length - 3} autre(s) naissance(s) prévue(s)...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filter Buttons */}
         <div className="bg-white rounded-xl shadow-lg mb-8 p-6">
           <div className="flex flex-wrap gap-4 items-center">
@@ -718,6 +917,12 @@ function App() {
                           className="text-blue-600 hover:text-blue-900 mr-3"
                         >
                           🏥 Médical
+                        </button>
+                        <button
+                          onClick={() => handleShowReproductionHistory(animal)}
+                          className="text-pink-600 hover:text-pink-900 mr-3"
+                        >
+                          🍼 Reproduction
                         </button>
                         <button
                           onClick={() => handleEdit(animal)}
@@ -1120,6 +1325,293 @@ function App() {
                     className="px-6 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Enregistrement...' : '💾 Enregistrer le soin'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reproduction History Modal */}
+      {showReproductionHistory && selectedAnimalForReproduction && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[90]">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Historique reproductif - {selectedAnimalForReproduction.nom || `${selectedAnimalForReproduction.type} #${selectedAnimalForReproduction.id.slice(-4)}`}
+                </h3>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowAddReproductionForm(true)}
+                    className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md text-sm"
+                  >
+                    + Ajouter un événement
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowReproductionHistory(false);
+                      setSelectedAnimalForReproduction(null);
+                      setReproductionEvents([]);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Reproduction Events List */}
+              <div className="space-y-4">
+                {reproductionEvents.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="text-4xl mb-2">🍼</div>
+                    <p>Aucun historique reproductif enregistré</p>
+                    <p className="text-sm">Commencez par ajouter un premier événement</p>
+                  </div>
+                ) : (
+                  reproductionEvents.map((event) => (
+                    <div key={event.id} className="bg-gray-50 p-4 rounded-lg border">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">
+                              {getEventTypeLabel(event.type_event)}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {formatDate(event.date_event)}
+                            </span>
+                            {event.date_prevue_mise_bas && (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                                Mise bas: {formatDate(event.date_prevue_mise_bas)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {event.male_animal_info && (
+                            <p className="text-sm mb-1"><strong>Mâle:</strong> {event.male_animal_info.nom} ({event.male_animal_info.race})</p>
+                          )}
+                          
+                          {event.male_info && (
+                            <p className="text-sm mb-1"><strong>Mâle externe:</strong> {event.male_info}</p>
+                          )}
+                          
+                          {event.nombre_petits_nes && (
+                            <div className="text-sm mb-1">
+                              <strong>Portée:</strong> {event.nombre_petits_nes} petit(s) né(s)
+                              {event.nombre_petits_vivants && ` - ${event.nombre_petits_vivants} vivant(s)`}
+                              {event.nombre_petits_morts && ` - ${event.nombre_petits_morts} mort(s)`}
+                            </div>
+                          )}
+                          
+                          {event.poids_moyen_petits && (
+                            <p className="text-sm mb-1"><strong>Poids moyen:</strong> {event.poids_moyen_petits} kg</p>
+                          )}
+                          
+                          {event.notes && (
+                            <p className="text-sm text-gray-600 mt-2">{event.notes}</p>
+                          )}
+                        </div>
+                        
+                        <div className="flex flex-col space-y-1 ml-4">
+                          <button
+                            onClick={() => handleDeleteReproductionEvent(event.id)}
+                            className="bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-xs"
+                            title="Supprimer cet événement"
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Reproduction Event Modal */}
+      {showAddReproductionForm && selectedAnimalForReproduction && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-[100]">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Ajouter un événement reproductif
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAddReproductionForm(false);
+                    setReproductionFormData({
+                      type_event: '',
+                      date_event: '',
+                      male_id: '',
+                      male_info: '',
+                      nombre_petits_nes: '',
+                      nombre_petits_vivants: '',
+                      nombre_petits_morts: '',
+                      poids_moyen_petits: '',
+                      notes: ''
+                    });
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form onSubmit={handleReproductionSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Type d'événement *</label>
+                    <select
+                      value={reproductionFormData.type_event}
+                      onChange={(e) => setReproductionFormData({...reproductionFormData, type_event: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                      required
+                    >
+                      <option value="">Sélectionnez un type</option>
+                      <option value="saillie">Saillie</option>
+                      <option value="insemination">Insémination</option>
+                      <option value="mise_bas">Mise bas</option>
+                      <option value="sevrage">Sevrage</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date de l'événement *</label>
+                    <input
+                      type="date"
+                      value={reproductionFormData.date_event}
+                      onChange={(e) => setReproductionFormData({...reproductionFormData, date_event: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                      required
+                    />
+                  </div>
+
+                  {(reproductionFormData.type_event === 'saillie' || reproductionFormData.type_event === 'insemination') && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Mâle reproducteur</label>
+                        <select
+                          value={reproductionFormData.male_id}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, male_id: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                        >
+                          <option value="">Sélectionnez un mâle</option>
+                          {breedingMales.map((male) => (
+                            <option key={male.id} value={male.id}>
+                              {male.nom || `${male.type} #${male.id.slice(-4)}`} - {male.race}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Ou mâle externe</label>
+                        <input
+                          type="text"
+                          value={reproductionFormData.male_info}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, male_info: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                          placeholder="Informations sur le mâle externe"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {reproductionFormData.type_event === 'mise_bas' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nombre de petits nés</label>
+                        <input
+                          type="number"
+                          value={reproductionFormData.nombre_petits_nes}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, nombre_petits_nes: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                          min="0"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nombre de petits vivants</label>
+                        <input
+                          type="number"
+                          value={reproductionFormData.nombre_petits_vivants}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, nombre_petits_vivants: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                          min="0"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nombre de petits morts</label>
+                        <input
+                          type="number"
+                          value={reproductionFormData.nombre_petits_morts}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, nombre_petits_morts: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                          min="0"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Poids moyen des petits (kg)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={reproductionFormData.poids_moyen_petits}
+                          onChange={(e) => setReproductionFormData({...reproductionFormData, poids_moyen_petits: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                          min="0"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <textarea
+                    value={reproductionFormData.notes}
+                    onChange={(e) => setReproductionFormData({...reproductionFormData, notes: e.target.value})}
+                    rows="3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                    placeholder="Observations, conditions, remarques..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddReproductionForm(false);
+                      setReproductionFormData({
+                        type_event: '',
+                        date_event: '',
+                        male_id: '',
+                        male_info: '',
+                        nombre_petits_nes: '',
+                        nombre_petits_vivants: '',
+                        nombre_petits_morts: '',
+                        poids_moyen_petits: '',
+                        notes: ''
+                      });
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    disabled={loading}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading || !reproductionFormData.type_event || !reproductionFormData.date_event}
+                    className="px-6 py-2 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Enregistrement...' : '🍼 Enregistrer l\'événement'}
                   </button>
                 </div>
               </form>

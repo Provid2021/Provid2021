@@ -34,7 +34,7 @@ class Animal(BaseModel):
     id: Optional[str] = None
     type: str  # "poulet" or "porc"
     race: str
-    sexe: str  # "M" or "F"
+    sexe: Optional[str] = None  # Only for porcs, None for poulets (vagues)
     date_naissance: str
     poids: float
     nom: Optional[str] = None
@@ -42,6 +42,10 @@ class Animal(BaseModel):
     statut: Optional[str] = "actif"  # "actif", "vendu", "mort", "abattu"
     date_vente: Optional[str] = None
     prix_vente: Optional[float] = None
+    # New fields for poulets (vagues)
+    nombre_animaux: Optional[int] = 1  # For poulets: number in the wave, for porcs: always 1
+    numero_vague: Optional[str] = None  # Wave number for poulets
+    photo_url: Optional[str] = None  # Photo URL
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -55,6 +59,9 @@ class AnimalUpdate(BaseModel):
     statut: Optional[str] = None
     date_vente: Optional[str] = None
     prix_vente: Optional[float] = None
+    nombre_animaux: Optional[int] = None
+    numero_vague: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class MedicalRecord(BaseModel):
     id: Optional[str] = None

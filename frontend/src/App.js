@@ -123,6 +123,17 @@ function App() {
     notes: ''
   });
 
+  const [financialFormData, setFinancialFormData] = useState({
+    type_transaction: 'depense',
+    categorie: '',
+    date_transaction: '',
+    montant: '',
+    animal_id: '',
+    description: '',
+    fournisseur_acheteur: '',
+    notes: ''
+  });
+
   useEffect(() => {
     fetchAnimals();
     fetchStats();

@@ -1059,9 +1059,20 @@ function App() {
         {/* Animals List */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Liste des Animaux ({animals.length})
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">
+                {filterCategory ? 
+                  `${getCategoryLabel(filterCategory)} (${getFilteredAndSortedAnimals().length})` :
+                  `Liste des Animaux (${getFilteredAndSortedAnimals().length})`
+                }
+              </h2>
+              {filterType && (
+                <div className="text-sm text-gray-500">
+                  Type: {filterType === 'poulet' ? '🐔 Poulets' : '🐷 Porcs'} 
+                  {filterCategory && ` • ${getCategoryLabel(filterCategory)}`}
+                </div>
+              )}
+            </div>
           </div>
           
           {loading ? (
@@ -1069,11 +1080,21 @@ function App() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
               <p className="mt-2 text-gray-600">Chargement...</p>
             </div>
-          ) : animals.length === 0 ? (
+          ) : getFilteredAndSortedAnimals().length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <div className="text-6xl mb-4">🐾</div>
-              <p className="text-lg">Aucun animal enregistré</p>
-              <p className="text-sm">Commencez par ajouter votre premier animal!</p>
+              <p className="text-lg">
+                {filterCategory ? 
+                  `Aucun animal dans la catégorie "${getCategoryLabel(filterCategory)}"` :
+                  'Aucun animal enregistré'
+                }
+              </p>
+              <p className="text-sm">
+                {filterCategory ? 
+                  'Essayez une autre catégorie ou ajoutez de nouveaux animaux' :
+                  'Commencez par ajouter votre premier animal!'
+                }
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -1084,7 +1105,7 @@ function App() {
                       Animal
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Race
+                      Race / Catégorie
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Sexe
@@ -1101,77 +1122,85 @@ function App() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {animals.map((animal) => (
-                    <tr key={animal.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 w-10 h-10">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
-                              <span className="text-white text-lg">
-                                {animal.type === 'poulet' ? '🐔' : '🐷'}
-                              </span>
+                  {getFilteredAndSortedAnimals().map((animal) => {
+                    const category = getAnimalCategory(animal);
+                    return (
+                      <tr key={animal.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 w-10 h-10">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center">
+                                <span className="text-white text-lg">
+                                  {animal.type === 'poulet' ? '🐔' : '🐷'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {animal.nom || `${animal.type} #${animal.id.slice(-4)}`}
+                              </div>
+                              <div className="text-sm text-gray-500 capitalize">
+                                {animal.type}
+                              </div>
                             </div>
                           </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {animal.nom || `${animal.type} #${animal.id.slice(-4)}`}
-                            </div>
-                            <div className="text-sm text-gray-500 capitalize">
-                              {animal.type}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{animal.race}</div>
+                            <div className="text-xs text-gray-500">
+                              {getCategoryLabel(category)}
                             </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {animal.race}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          animal.sexe === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
-                        }`}>
-                          {animal.sexe === 'M' ? '♂ Mâle' : '♀ Femelle'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {calculateAge(animal.date_naissance)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {animal.poids} kg
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => handleShowAnimalProfile(animal)}
-                          className="text-green-600 hover:text-green-900 mr-3"
-                        >
-                          👁️ Profil
-                        </button>
-                        <button
-                          onClick={() => handleShowMedicalHistory(animal)}
-                          className="text-blue-600 hover:text-blue-900 mr-3"
-                        >
-                          🏥 Médical
-                        </button>
-                        <button
-                          onClick={() => handleShowReproductionHistory(animal)}
-                          className="text-pink-600 hover:text-pink-900 mr-3"
-                        >
-                          🍼 Reproduction
-                        </button>
-                        <button
-                          onClick={() => handleEdit(animal)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3"
-                        >
-                          Modifier
-                        </button>
-                        <button
-                          onClick={() => handleDelete(animal.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Supprimer
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            animal.sexe === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                          }`}>
+                            {animal.sexe === 'M' ? '♂ Mâle' : '♀ Femelle'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {calculateAge(animal.date_naissance)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {animal.poids} kg
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => handleShowAnimalProfile(animal)}
+                            className="text-green-600 hover:text-green-900 mr-3"
+                          >
+                            👁️ Profil
+                          </button>
+                          <button
+                            onClick={() => handleShowMedicalHistory(animal)}
+                            className="text-blue-600 hover:text-blue-900 mr-3"
+                          >
+                            🏥 Médical
+                          </button>
+                          <button
+                            onClick={() => handleShowReproductionHistory(animal)}
+                            className="text-pink-600 hover:text-pink-900 mr-3"
+                          >
+                            🍼 Reproduction
+                          </button>
+                          <button
+                            onClick={() => handleEdit(animal)}
+                            className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          >
+                            Modifier
+                          </button>
+                          <button
+                            onClick={() => handleDelete(animal.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Supprimer
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

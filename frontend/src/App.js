@@ -715,7 +715,7 @@ const Home = () => {
       
       {/* Bouton d'action flottant pour mobile */}
       <button
-        onClick={() => alert('🐄 Ajouter un nouvel animal à l\'élevage - Fonctionnalité à venir')}
+        onClick={openAddModal}
         className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-full shadow-xl flex items-center justify-center text-2xl active:scale-95 transform transition-all lg:hidden hover:shadow-2xl"
         aria-label="Ajouter un animal"
       >

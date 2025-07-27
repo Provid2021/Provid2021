@@ -1044,7 +1044,7 @@ function App() {
                 <p className={`text-lg font-bold ${
                   (financialStats.resume?.benefice || 0) >= 0 ? 'text-green-600' : 'text-red-600'
                 }`}>
-                  {(financialStats.resume?.benefice || 0).toFixed(2)}€
+                  {(financialStats.resume?.benefice || 0).toFixed(0)} FCFA
                 </p>
               </div>
             </div>

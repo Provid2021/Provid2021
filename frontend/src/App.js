@@ -32,6 +32,17 @@ const RACES_PORC = [
   'Autre'
 ];
 
+// Types d'interventions médicales
+const TYPES_INTERVENTION = [
+  'Vaccination',
+  'Traitement antibiotique',
+  'Vermifuge',
+  'Visite vétérinaire',
+  'Chirurgie',
+  'Examen de routine',
+  'Autre'
+];
+
 function App() {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});
@@ -39,6 +50,13 @@ function App() {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [filterType, setFilterType] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Medical records states
+  const [showMedicalHistory, setShowMedicalHistory] = useState(false);
+  const [selectedAnimalForMedical, setSelectedAnimalForMedical] = useState(null);
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [showAddMedicalForm, setShowAddMedicalForm] = useState(false);
+  const [upcomingReminders, setUpcomingReminders] = useState([]);
 
   const [formData, setFormData] = useState({
     type: 'poulet',
@@ -51,9 +69,20 @@ function App() {
     notes: ''
   });
 
+  const [medicalFormData, setMedicalFormData] = useState({
+    date_intervention: '',
+    type_intervention: '',
+    medicament: '',
+    veterinaire: '',
+    cout: '',
+    notes: '',
+    date_rappel: ''
+  });
+
   useEffect(() => {
     fetchAnimals();
     fetchStats();
+    fetchUpcomingReminders();
   }, [filterType]);
 
   const fetchAnimals = async () => {
@@ -78,6 +107,26 @@ function App() {
       setStats(data);
     } catch (error) {
       console.error('Erreur lors du chargement des statistiques:', error);
+    }
+  };
+
+  const fetchUpcomingReminders = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/medical-records/reminders/upcoming`);
+      const data = await response.json();
+      setUpcomingReminders(data.reminders || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des rappels:', error);
+    }
+  };
+
+  const fetchMedicalRecords = async (animalId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/medical-records/${animalId}`);
+      const data = await response.json();
+      setMedicalRecords(data.medical_records || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement de l\'historique médical:', error);
     }
   };
 
@@ -132,6 +181,50 @@ function App() {
     setLoading(false);
   };
 
+  const handleMedicalSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const submitData = {
+        animal_id: selectedAnimalForMedical.id,
+        date_intervention: medicalFormData.date_intervention,
+        type_intervention: medicalFormData.type_intervention,
+        medicament: medicalFormData.medicament.trim(),
+        veterinaire: medicalFormData.veterinaire.trim(),
+        cout: medicalFormData.cout ? parseFloat(medicalFormData.cout) : null,
+        notes: medicalFormData.notes.trim(),
+        date_rappel: medicalFormData.date_rappel || null
+      };
+      
+      const response = await fetch(`${API_BASE_URL}/api/medical-records`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (response.ok) {
+        setShowAddMedicalForm(false);
+        setMedicalFormData({
+          date_intervention: '',
+          type_intervention: '',
+          medicament: '',
+          veterinaire: '',
+          cout: '',
+          notes: '',
+          date_rappel: ''
+        });
+        fetchMedicalRecords(selectedAnimalForMedical.id);
+        fetchUpcomingReminders();
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du dossier médical:', error);
+    }
+    setLoading(false);
+  };
+
   const handleEdit = (animal) => {
     setSelectedAnimal(animal);
     setFormData({
@@ -148,7 +241,7 @@ function App() {
   };
 
   const handleDelete = async (animalId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet animal ?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet animal et tout son historique médical ?')) {
       try {
         const response = await fetch(`${API_BASE_URL}/api/animals/${animalId}`, {
           method: 'DELETE',
@@ -161,6 +254,12 @@ function App() {
         console.error('Erreur lors de la suppression:', error);
       }
     }
+  };
+
+  const handleShowMedicalHistory = (animal) => {
+    setSelectedAnimalForMedical(animal);
+    setShowMedicalHistory(true);
+    fetchMedicalRecords(animal.id);
   };
 
   // Obtenir les races disponibles selon le type d'animal sélectionné
@@ -184,6 +283,11 @@ function App() {
       const months = Math.floor((diffDays % 365) / 30);
       return `${years} an${years > 1 ? 's' : ''} ${months > 0 ? `${months} mois` : ''}`;
     }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
   };
 
   return (
@@ -299,6 +403,33 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* Upcoming Reminders */}
+        {upcomingReminders.length > 0 && (
+          <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-8 rounded-lg">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-amber-800">
+                  Rappels médicaux à venir ({upcomingReminders.length})
+                </h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  {upcomingReminders.slice(0, 3).map((reminder, index) => (
+                    <div key={index} className="mb-1">
+                      <strong>{reminder.animal_info?.nom || 'Animal inconnu'}</strong> - 
+                      {reminder.type_intervention} le {formatDate(reminder.date_rappel)}
+                    </div>
+                  ))}
+                  {upcomingReminders.length > 3 && (
+                    <div className="text-xs mt-2">Et {upcomingReminders.length - 3} autre(s) rappel(s)...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filter Buttons */}
         <div className="bg-white rounded-xl shadow-lg mb-8 p-6">
@@ -423,8 +554,14 @@ function App() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
+                          onClick={() => handleShowMedicalHistory(animal)}
+                          className="text-blue-600 hover:text-blue-900 mr-3"
+                        >
+                          🏥 Médical
+                        </button>
+                        <button
                           onClick={() => handleEdit(animal)}
-                          className="text-indigo-600 hover:text-indigo-900 mr-4"
+                          className="text-indigo-600 hover:text-indigo-900 mr-3"
                         >
                           Modifier
                         </button>
@@ -583,6 +720,216 @@ function App() {
                     className="px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors disabled:opacity-50"
                   >
                     {loading ? 'Sauvegarde...' : (selectedAnimal ? 'Modifier' : 'Ajouter')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medical History Modal */}
+      {showMedicalHistory && selectedAnimalForMedical && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Historique médical - {selectedAnimalForMedical.nom || `${selectedAnimalForMedical.type} #${selectedAnimalForMedical.id.slice(-4)}`}
+                </h3>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowAddMedicalForm(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm"
+                  >
+                    + Ajouter un soin
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMedicalHistory(false);
+                      setSelectedAnimalForMedical(null);
+                      setMedicalRecords([]);
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Medical Records List */}
+              <div className="space-y-4">
+                {medicalRecords.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <div className="text-4xl mb-2">🏥</div>
+                    <p>Aucun historique médical enregistré</p>
+                    <p className="text-sm">Commencez par ajouter un premier soin</p>
+                  </div>
+                ) : (
+                  medicalRecords.map((record) => (
+                    <div key={record.id} className="bg-gray-50 p-4 rounded-lg border">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                              {record.type_intervention}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              {formatDate(record.date_intervention)}
+                            </span>
+                            {record.date_rappel && (
+                              <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs">
+                                Rappel: {formatDate(record.date_rappel)}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {record.medicament && (
+                            <p className="text-sm mb-1"><strong>Médicament:</strong> {record.medicament}</p>
+                          )}
+                          
+                          {record.veterinaire && (
+                            <p className="text-sm mb-1"><strong>Vétérinaire:</strong> {record.veterinaire}</p>
+                          )}
+                          
+                          {record.cout && (
+                            <p className="text-sm mb-1"><strong>Coût:</strong> {record.cout}€</p>
+                          )}
+                          
+                          {record.notes && (
+                            <p className="text-sm text-gray-600 mt-2">{record.notes}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Medical Record Modal */}
+      {showAddMedicalForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-60">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Ajouter un soin médical
+              </h3>
+              
+              <form onSubmit={handleMedicalSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date d'intervention *</label>
+                    <input
+                      type="date"
+                      value={medicalFormData.date_intervention}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, date_intervention: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Type d'intervention *</label>
+                    <select
+                      value={medicalFormData.type_intervention}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, type_intervention: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Sélectionnez un type</option>
+                      {TYPES_INTERVENTION.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Médicament</label>
+                    <input
+                      type="text"
+                      value={medicalFormData.medicament}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, medicament: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Nom du médicament"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Vétérinaire</label>
+                    <input
+                      type="text"
+                      value={medicalFormData.veterinaire}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, veterinaire: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Nom du vétérinaire"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Coût (€)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={medicalFormData.cout}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, cout: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date de rappel</label>
+                    <input
+                      type="date"
+                      value={medicalFormData.date_rappel}
+                      onChange={(e) => setMedicalFormData({...medicalFormData, date_rappel: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <textarea
+                    value={medicalFormData.notes}
+                    onChange={(e) => setMedicalFormData({...medicalFormData, notes: e.target.value})}
+                    rows="3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Observations, dosage, réactions..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddMedicalForm(false);
+                      setMedicalFormData({
+                        date_intervention: '',
+                        type_intervention: '',
+                        medicament: '',
+                        veterinaire: '',
+                        cout: '',
+                        notes: '',
+                        date_rappel: ''
+                      });
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50"
+                  >
+                    {loading ? 'Sauvegarde...' : 'Ajouter'}
                   </button>
                 </div>
               </form>

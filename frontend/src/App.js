@@ -67,16 +67,16 @@ const MobileHeader = ({ onAddAnimal, onMenuToggle }) => {
   );
 };
 
-// Statistics Card Component
-const StatCard = ({ icon, title, value, subtitle, color }) => {
+// Statistics Card Component with better mobile design
+const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   return (
-    <div className={`${color} rounded-lg p-4 text-white shadow-lg`}>
+    <div className={`${color} rounded-xl p-4 text-white shadow-lg transform transition-transform active:scale-95 ${className}`}>
       <div className="flex items-center space-x-3">
-        <div className="text-2xl">{icon}</div>
-        <div>
-          <h3 className="text-sm font-medium opacity-90">{title}</h3>
-          <p className="text-xl font-bold">{value}</p>
-          {subtitle && <p className="text-xs opacity-80">{subtitle}</p>}
+        <div className="text-3xl">{icon}</div>
+        <div className="flex-1">
+          <h3 className="text-sm font-medium opacity-90 uppercase tracking-wide">{title}</h3>
+          <p className="text-2xl font-bold">{value}</p>
+          {subtitle && <p className="text-xs opacity-80 mt-1">{subtitle}</p>}
         </div>
       </div>
     </div>

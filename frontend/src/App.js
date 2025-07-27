@@ -478,6 +478,64 @@ function App() {
     }
   };
 
+  const handleFinancialSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!financialFormData.type_transaction || !financialFormData.categorie || 
+        !financialFormData.date_transaction || !financialFormData.montant || 
+        !financialFormData.description) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const submitData = {
+        type_transaction: financialFormData.type_transaction,
+        categorie: financialFormData.categorie,
+        date_transaction: financialFormData.date_transaction,
+        montant: parseFloat(financialFormData.montant),
+        animal_id: financialFormData.animal_id || null,
+        description: financialFormData.description.trim(),
+        fournisseur_acheteur: financialFormData.fournisseur_acheteur ? financialFormData.fournisseur_acheteur.trim() : null,
+        notes: financialFormData.notes ? financialFormData.notes.trim() : ''
+      };
+      
+      const response = await fetch(`${API_BASE_URL}/api/financial-records`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(submitData),
+      });
+
+      if (response.ok) {
+        setShowAddFinancialForm(false);
+        setFinancialFormData({
+          type_transaction: 'depense',
+          categorie: '',
+          date_transaction: '',
+          montant: '',
+          animal_id: '',
+          description: '',
+          fournisseur_acheteur: '',
+          notes: ''
+        });
+        
+        await fetchFinancialStats();
+        alert('Transaction financière ajoutée avec succès !');
+      } else {
+        const errorData = await response.json();
+        alert(`Erreur lors de l'ajout: ${errorData.detail || 'Erreur inconnue'}`);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur de connexion. Veuillez réessayer.');
+    }
+    setLoading(false);
+  };
+
   const handleClickReminder = async (reminder) => {
     // Find the animal for this reminder
     const animal = animals.find(a => a.id === reminder.animal_id);

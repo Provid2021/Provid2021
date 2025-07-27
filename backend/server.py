@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime
+from enum import Enum
 
 
 ROOT_DIR = Path(__file__).parent
@@ -26,7 +27,31 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
+# Enums pour les nouveaux systèmes
+class MedicalType(str, Enum):
+    VACCINATION = "vaccination"
+    TREATMENT = "traitement"
+    CHECKUP = "visite"
+    SURGERY = "chirurgie"
+    OTHER = "autre"
+
+class ReproductionStatus(str, Enum):
+    AVAILABLE = "disponible"
+    PREGNANT = "gestante"
+    LACTATING = "allaitante"
+    BREEDING = "reproduction"
+    RESTING = "repos"
+
+class EventType(str, Enum):
+    BIRTH = "naissance"
+    SALE = "vente"
+    MEDICAL = "medical"
+    REPRODUCTION = "reproduction"
+    FEEDING = "alimentation"
+    OTHER = "autre"
+
+
+# Modèles existants
 class Animal(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -36,6 +61,7 @@ class Animal(BaseModel):
     weight: float
     type: str  # "poulet" or "porc"
     status: str = "actif"  # "actif" or "vendu"
+    reproduction_status: Optional[ReproductionStatus] = ReproductionStatus.AVAILABLE
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class AnimalCreate(BaseModel):
@@ -53,6 +79,71 @@ class AnimalUpdate(BaseModel):
     age: Optional[str] = None
     weight: Optional[float] = None
     status: Optional[str] = None
+    reproduction_status: Optional[ReproductionStatus] = None
+
+
+# Nouveaux modèles pour la gestion médicale
+class MedicalRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    animal_id: str
+    type: MedicalType
+    description: str
+    veterinarian: Optional[str] = None
+    cost: Optional[float] = None
+    date: datetime = Field(default_factory=datetime.utcnow)
+    next_visit_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+class MedicalRecordCreate(BaseModel):
+    animal_id: str
+    type: MedicalType
+    description: str
+    veterinarian: Optional[str] = None
+    cost: Optional[float] = None
+    next_visit_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+# Nouveaux modèles pour la reproduction
+class ReproductionRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    female_id: str
+    male_id: Optional[str] = None
+    breeding_date: datetime
+    expected_birth_date: Optional[datetime] = None
+    actual_birth_date: Optional[datetime] = None
+    offspring_count: Optional[int] = None
+    offspring_ids: List[str] = []
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class ReproductionRecordCreate(BaseModel):
+    female_id: str
+    male_id: Optional[str] = None
+    breeding_date: datetime
+    expected_birth_date: Optional[datetime] = None
+    notes: Optional[str] = None
+
+
+# Modèle pour l'historique
+class HistoryEvent(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    animal_id: Optional[str] = None
+    event_type: EventType
+    title: str
+    description: str
+    date: datetime = Field(default_factory=datetime.utcnow)
+    cost: Optional[float] = None
+    metadata: Optional[dict] = {}
+
+class HistoryEventCreate(BaseModel):
+    animal_id: Optional[str] = None
+    event_type: EventType
+    title: str
+    description: str
+    cost: Optional[float] = None
+    metadata: Optional[dict] = {}
+
 
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

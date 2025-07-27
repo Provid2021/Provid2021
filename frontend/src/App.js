@@ -923,8 +923,8 @@ function App() {
                   <span className="text-2xl">🐷</span>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Gestion d'Élevage</h1>
-                  <p className="text-sm text-gray-600">Suivi de vos poulets et porcs</p>
+                  <h1 className="text-3xl font-bold text-gray-900">Élevage la Providence</h1>
+                  <p className="text-sm text-gray-600">Logiciel de gestion d'élevage professionnel</p>
                 </div>
               </div>
             </div>

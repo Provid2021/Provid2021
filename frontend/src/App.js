@@ -1061,7 +1061,7 @@ const EditAnimalModal = ({ isOpen, onClose, animal, onUpdate }) => {
   );
 };
 
-// Formulaire d'ajout d'animal avec calendrier et suggestions
+// Formulaire d'ajout d'animal avec gestion par vagues et quantités
 const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -1069,11 +1069,14 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
     sex: 'Mâle',
     birth_date: '',
     weight: '',
-    type: 'poulet'
+    type: 'poulet',
+    initial_quantity: 1,
+    unit_price: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calculatedAge, setCalculatedAge] = useState('');
   const [weightSuggestions, setWeightSuggestions] = useState([]);
+  const [quantitySuggestions, setQuantitySuggestions] = useState([]);
 
   // Calculer l'âge automatiquement basé sur la date de naissance
   const calculateAge = (birthDate) => {
@@ -1096,6 +1099,16 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
     }
   };
 
+  // Suggestions de quantité basées sur le type
+  const generateQuantitySuggestions = (type) => {
+    if (type === 'poulet') {
+      return [100, 250, 500, 1000, 1500, 2000];
+    } else if (type === 'porc') {
+      return [1, 2, 5, 10, 15, 20];
+    }
+    return [];
+  };
+
   // Suggestions de poids basées sur le type et l'âge
   const generateWeightSuggestions = (type, birthDate) => {
     if (!birthDate) return [];
@@ -1116,6 +1129,16 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
     return [];
   };
 
+  // Suggestions de prix unitaire
+  const generatePriceSuggestions = (type) => {
+    if (type === 'poulet') {
+      return [1000, 1500, 2000, 2500, 3000]; // Prix par poulet
+    } else if (type === 'porc') {
+      return [50000, 75000, 100000, 150000, 200000]; // Prix par porc
+    }
+    return [];
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -1124,10 +1147,12 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
       const animalData = {
         ...formData,
         age: calculatedAge,
-        weight: parseFloat(formData.weight)
+        weight: parseFloat(formData.weight),
+        initial_quantity: parseInt(formData.initial_quantity),
+        unit_price: formData.unit_price ? parseFloat(formData.unit_price) : null
       };
       
-      // Supprimer birth_date du payload si on veut juste envoyer l'âge calculé
+      // Supprimer birth_date du payload
       delete animalData.birth_date;
       
       const response = await axios.post(`${API}/animals`, animalData);
@@ -1140,16 +1165,19 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
           sex: 'Mâle',
           birth_date: '',
           weight: '',
-          type: 'poulet'
+          type: 'poulet',
+          initial_quantity: 1,
+          unit_price: ''
         });
         setCalculatedAge('');
         setWeightSuggestions([]);
+        setQuantitySuggestions([]);
         onClose();
-        alert('🎉 Animal ajouté avec succès !');
+        alert(`🎉 ${animalData.initial_quantity} ${animalData.type}(s) ajouté(s) avec succès !`);
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout:', error);
-      alert('❌ Erreur lors de l\'ajout de l\'animal');
+      alert('❌ Erreur lors de l\'ajout de la vague');
     } finally {
       setIsSubmitting(false);
     }
@@ -1166,14 +1194,32 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
     } else if (field === 'type') {
       const suggestions = generateWeightSuggestions(value, formData.birth_date);
       setWeightSuggestions(suggestions);
+      const qtySuggestions = generateQuantitySuggestions(value);
+      setQuantitySuggestions(qtySuggestions);
+      // Ajuster la quantité par défaut selon le type
+      if (value === 'poulet' && formData.initial_quantity === 1) {
+        setFormData(prev => ({ ...prev, initial_quantity: 500 }));
+      } else if (value === 'porc' && formData.initial_quantity > 50) {
+        setFormData(prev => ({ ...prev, initial_quantity: 1 }));
+      }
     }
   };
 
-  const handleWeightSuggestion = (weight) => {
-    setFormData(prev => ({ ...prev, weight: weight.toString() }));
+  const handleSuggestion = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value.toString() }));
   };
 
+  // Initialiser les suggestions quand le modal s'ouvre
+  React.useEffect(() => {
+    if (isOpen) {
+      const qtySuggestions = generateQuantitySuggestions(formData.type);
+      setQuantitySuggestions(qtySuggestions);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const priceSuggestions = generatePriceSuggestions(formData.type);
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
@@ -1181,7 +1227,9 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
         {/* Header */}
         <div className="professional-modal-header text-white p-3 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">🐄 Ajouter un Animal</h2>
+            <h2 className="text-lg font-bold">
+              🐄 Nouvelle Vague {formData.type === 'poulet' ? '🐔' : '🐷'}
+            </h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-600 rounded-lg transition-colors"
@@ -1194,25 +1242,10 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
-          {/* Nom de l'animal */}
+          {/* Type d'animal en premier */}
           <div>
             <label className="block text-xs font-semibold text-gray-300 mb-1">
-              Nom de l'animal *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="Ex: Poulet #001, Cochon Marie..."
-              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
-              required
-            />
-          </div>
-
-          {/* Type d'animal */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
-              Type d'animal *
+              Type d'élevage *
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -1224,7 +1257,7 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
                     : 'btn-secondary'
                 }`}
               >
-                🐔 Poulet
+                🐔 Volailles
               </button>
               <button
                 type="button"
@@ -1235,12 +1268,63 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
                     : 'btn-secondary'
                 }`}
               >
-                🐷 Porc
+                🐷 Porcins
               </button>
             </div>
           </div>
 
-          {/* Catégorie/Race */}
+          {/* Quantité avec suggestions */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Quantité {formData.type === 'poulet' ? '(têtes par vague)' : '(nombre d\'animaux)'} *
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={formData.initial_quantity}
+              onChange={(e) => handleChange('initial_quantity', e.target.value)}
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
+              required
+            />
+            
+            {/* Suggestions de quantité */}
+            {quantitySuggestions.length > 0 && (
+              <div className="mt-1">
+                <p className="text-xs text-gray-400 mb-1">
+                  💡 {formData.type === 'poulet' ? 'Tailles de vagues courantes' : 'Quantités suggérées'} :
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {quantitySuggestions.map((qty, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSuggestion('initial_quantity', qty)}
+                      className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+                    >
+                      {qty} {formData.type === 'poulet' ? 'têtes' : 'animaux'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Nom de la vague */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Nom de la vague *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder={`Ex: Vague ${formData.type} ${new Date().getFullYear()}`}
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
+              required
+            />
+          </div>
+
+          {/* Race/Catégorie */}
           <div>
             <label className="block text-xs font-semibold text-gray-300 mb-1">
               Race/Catégorie *
@@ -1258,6 +1342,8 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
                   <option value="Sussex">Sussex</option>
                   <option value="Rhode Island Red">Rhode Island Red</option>
                   <option value="Leghorn">Leghorn</option>
+                  <option value="Broiler">Broiler (Chair)</option>
+                  <option value="Pondeuse">Pondeuse</option>
                 </>
               ) : (
                 <>
@@ -1270,91 +1356,121 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
             </select>
           </div>
 
-          {/* Sexe */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
-              Sexe *
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleChange('sex', 'Mâle')}
-                className={`p-2 rounded-lg font-medium transition-all text-xs ${
-                  formData.sex === 'Mâle'
-                    ? 'gradient-professional-blue text-white'
-                    : 'btn-secondary'
-                }`}
+          {/* Sexe et Date sur la même ligne */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Répartition sexe
+              </label>
+              <select
+                value={formData.sex}
+                onChange={(e) => handleChange('sex', e.target.value)}
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-gray-800 text-white text-sm"
               >
-                ♂️ Mâle
-              </button>
-              <button
-                type="button"
-                onClick={() => handleChange('sex', 'Femelle')}
-                className={`p-2 rounded-lg font-medium transition-all text-xs ${
-                  formData.sex === 'Femelle'
-                    ? 'gradient-professional-purple text-white'
-                    : 'btn-secondary'
-                }`}
-              >
-                ♀️ Femelle
-              </button>
+                <option value="Mixte">Mixte</option>
+                <option value="Mâle">Mâles uniquement</option>
+                <option value="Femelle">Femelles uniquement</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Date de naissance *
+              </label>
+              <input
+                type="date"
+                value={formData.birth_date}
+                onChange={(e) => handleChange('birth_date', e.target.value)}
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
+                required
+              />
             </div>
           </div>
 
-          {/* Date de naissance avec calendrier */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
-              Date de naissance *
-            </label>
-            <input
-              type="date"
-              value={formData.birth_date}
-              onChange={(e) => handleChange('birth_date', e.target.value)}
-              max={new Date().toISOString().split('T')[0]}
-              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
-              required
-            />
-            {calculatedAge && (
-              <p className="text-xs text-green-400 mt-1">
-                📅 Âge calculé: {calculatedAge}
-              </p>
-            )}
+          {calculatedAge && (
+            <p className="text-xs text-green-400">
+              📅 Âge: {calculatedAge}
+            </p>
+          )}
+
+          {/* Poids moyen et Prix d'achat sur la même ligne */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Poids moyen (kg) *
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.weight}
+                onChange={(e) => handleChange('weight', e.target.value)}
+                placeholder="Poids par tête"
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Prix unitaire (FCFA)
+              </label>
+              <input
+                type="number"
+                value={formData.unit_price}
+                onChange={(e) => handleChange('unit_price', e.target.value)}
+                placeholder="Prix d'achat"
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
+              />
+            </div>
           </div>
 
-          {/* Poids avec suggestions */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-300 mb-1">
-              Poids (kg) *
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              value={formData.weight}
-              onChange={(e) => handleChange('weight', e.target.value)}
-              placeholder="Entrez le poids ou choisissez une suggestion"
-              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
-              required
-            />
-            
-            {/* Suggestions de poids */}
-            {weightSuggestions.length > 0 && (
-              <div className="mt-1">
-                <p className="text-xs text-gray-400 mb-1">💡 Suggestions de poids :</p>
-                <div className="flex flex-wrap gap-1">
-                  {weightSuggestions.map((weight, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => handleWeightSuggestion(weight)}
-                      className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
-                    >
-                      {weight} kg
-                    </button>
-                  ))}
-                </div>
+          {/* Suggestions de poids */}
+          {weightSuggestions.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">💡 Poids suggérés :</p>
+              <div className="flex flex-wrap gap-1">
+                {weightSuggestions.map((weight, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSuggestion('weight', weight)}
+                    className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+                  >
+                    {weight} kg
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Suggestions de prix */}
+          {priceSuggestions.length > 0 && (
+            <div>
+              <p className="text-xs text-gray-400 mb-1">💰 Prix suggérés :</p>
+              <div className="flex flex-wrap gap-1">
+                {priceSuggestions.map((price, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => handleSuggestion('unit_price', price)}
+                    className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+                  >
+                    {price.toLocaleString()} F
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Récapitulatif */}
+          {formData.initial_quantity && formData.unit_price && (
+            <div className="bg-green-900 bg-opacity-30 p-2 rounded border border-green-600">
+              <p className="text-xs text-green-400 font-semibold">
+                📊 Récapitulatif: {formData.initial_quantity} {formData.type}(s) × {parseInt(formData.unit_price).toLocaleString()} F = {(formData.initial_quantity * parseFloat(formData.unit_price)).toLocaleString()} FCFA
+              </p>
+            </div>
+          )}
 
           {/* Boutons */}
           <div className="flex space-x-2 pt-3">
@@ -1378,7 +1494,7 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
                 </>
               ) : (
                 <>
-                  ➕ Ajouter l'animal
+                  ➕ Ajouter la vague
                 </>
               )}
             </button>

@@ -479,8 +479,8 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Mobile Header Component with Hamburger
-const MobileHeader = ({ onAddAnimal, onMenuToggle }) => {
+// Mobile Header Component with Hamburger et bouton finances
+const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick }) => {
   return (
     <header className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 sticky top-0 z-40 shadow-lg">
       <div className="flex items-center justify-between">
@@ -495,8 +495,14 @@ const MobileHeader = ({ onAddAnimal, onMenuToggle }) => {
         </div>
         <div className="flex items-center space-x-2">
           <button
+            onClick={onFinancesClick}
+            className="bg-orange-600 px-3 py-2 rounded-lg text-sm font-medium active:bg-orange-700 transform active:scale-95 transition-all shadow-md"
+          >
+            💰 Finances
+          </button>
+          <button
             onClick={onAddAnimal}
-            className="bg-green-700 px-4 py-2 rounded-lg text-sm font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
+            className="bg-green-700 px-3 py-2 rounded-lg text-sm font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
           >
             + Animal
           </button>

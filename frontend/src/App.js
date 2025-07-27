@@ -785,6 +785,14 @@ const Home = () => {
     setIsAddModalOpen(false);
   };
 
+  const openFinancesModal = () => {
+    setIsFinancesModalOpen(true);
+  };
+
+  const closeFinancesModal = () => {
+    setIsFinancesModalOpen(false);
+  };
+
   // Filter animals based on current filters
   const filteredAnimals = animals.filter(animal => {
     if (filters.status !== 'all' && animal.status !== filters.status) return false;

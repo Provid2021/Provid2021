@@ -215,12 +215,13 @@ const FilterSection = ({ filters, onFilterChange }) => {
   );
 };
 
-// Main Home Component
+// Main Home Component with mobile menu
 const Home = () => {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});
   const [filters, setFilters] = useState({ status: 'actif', type: 'all' });
   const [loading, setLoading] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Fetch data
   const fetchAnimals = async () => {

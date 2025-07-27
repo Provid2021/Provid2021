@@ -136,7 +136,8 @@ function App() {
     setSelectedAnimal(animal);
     setFormData({
       type: animal.type,
-      race: animal.race,
+      race: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? animal.race : 'Autre',
+      raceAutre: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? '' : animal.race,
       sexe: animal.sexe,
       date_naissance: animal.date_naissance,
       poids: animal.poids.toString(),

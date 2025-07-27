@@ -6,6 +6,811 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Modal de Gestion Médicale
+const MedicalModal = ({ isOpen, onClose, animals }) => {
+  const [medicalRecords, setMedicalRecords] = useState([]);
+  const [selectedAnimal, setSelectedAnimal] = useState('');
+  const [newRecord, setNewRecord] = useState({
+    type: 'vaccination',
+    description: '',
+    veterinarian: '',
+    cost: '',
+    notes: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const medicalTypes = {
+    'vaccination': { icon: '💉', label: 'Vaccination', color: 'bg-blue-500' },
+    'traitement': { icon: '💊', label: 'Traitement', color: 'bg-green-500' },
+    'visite': { icon: '🩺', label: 'Visite de contrôle', color: 'bg-yellow-500' },
+    'chirurgie': { icon: '🏥', label: 'Chirurgie', color: 'bg-red-500' },
+    'autre': { icon: '📋', label: 'Autre', color: 'bg-gray-500' }
+  };
+
+  const fetchMedicalRecords = async () => {
+    try {
+      const response = await axios.get(`${API}/medical`);
+      setMedicalRecords(response.data);
+    } catch (error) {
+      console.error('Error fetching medical records:', error);
+    }
+  };
+
+  const submitMedicalRecord = async (e) => {
+    e.preventDefault();
+    if (!selectedAnimal) {
+      alert('Veuillez sélectionner un animal');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const recordData = {
+        animal_id: selectedAnimal,
+        type: newRecord.type,
+        description: newRecord.description,
+        veterinarian: newRecord.veterinarian || null,
+        cost: newRecord.cost ? parseFloat(newRecord.cost) : null,
+        notes: newRecord.notes || null
+      };
+
+      await axios.post(`${API}/medical`, recordData);
+      
+      setNewRecord({
+        type: 'vaccination',
+        description: '',
+        veterinarian: '',
+        cost: '',
+        notes: ''
+      });
+      setSelectedAnimal('');
+      
+      fetchMedicalRecords();
+      alert('📋 Dossier médical ajouté avec succès !');
+    } catch (error) {
+      console.error('Error creating medical record:', error);
+      alert('❌ Erreur lors de l\'ajout du dossier médical');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchMedicalRecords();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-blue-600 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">🏥 Gestion Médicale</h2>
+            <button onClick={onClose} className="p-2 hover:bg-blue-700 rounded-lg">✕</button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Formulaire d'ajout */}
+          <form onSubmit={submitMedicalRecord} className="space-y-4">
+            <h3 className="text-lg font-bold text-gray-800">📝 Nouveau Dossier Médical</h3>
+            
+            {/* Sélection animal */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Animal *</label>
+              <select
+                value={selectedAnimal}
+                onChange={(e) => setSelectedAnimal(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Sélectionner un animal...</option>
+                {animals.filter(a => a.status === 'actif').map(animal => (
+                  <option key={animal.id} value={animal.id}>
+                    {animal.type === 'poulet' ? '🐔' : '🐷'} {animal.name} ({animal.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Type de soin */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Type de soin *</label>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(medicalTypes).map(([key, type]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setNewRecord(prev => ({ ...prev, type: key }))}
+                    className={`p-3 rounded-xl text-sm font-medium transition-all ${
+                      newRecord.type === key
+                        ? `${type.color} text-white`
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {type.icon} {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
+              <textarea
+                value={newRecord.description}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Détails du traitement ou de la visite..."
+                className="w-full p-3 border border-gray-300 rounded-xl h-20 focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            {/* Vétérinaire */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Vétérinaire</label>
+              <input
+                type="text"
+                value={newRecord.veterinarian}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, veterinarian: e.target.value }))}
+                placeholder="Nom du vétérinaire"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Coût */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Coût (FCFA)</label>
+              <input
+                type="number"
+                value={newRecord.cost}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, cost: e.target.value }))}
+                placeholder="0"
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+              <textarea
+                value={newRecord.notes}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Notes additionnelles..."
+                className="w-full p-3 border border-gray-300 rounded-xl h-16 focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? 'Ajout...' : '📋 Ajouter au Dossier Médical'}
+            </button>
+          </form>
+
+          {/* Historique médical récent */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📊 Historique Médical Récent</h3>
+            {medicalRecords.length > 0 ? (
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {medicalRecords.slice(0, 10).map((record) => {
+                  const animal = animals.find(a => a.id === record.animal_id);
+                  const typeInfo = medicalTypes[record.type] || medicalTypes.autre;
+                  
+                  return (
+                    <div key={record.id} className="bg-gray-50 p-3 rounded-lg border">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg">{typeInfo.icon}</span>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-800">
+                              {animal ? `${animal.name}` : 'Animal non trouvé'}
+                            </p>
+                            <p className="text-xs text-gray-600">{typeInfo.label}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(record.date).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700">{record.description}</p>
+                      {record.cost && (
+                        <p className="text-sm font-medium text-green-600 mt-1">
+                          Coût: {record.cost.toLocaleString()} FCFA
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-2">🏥</div>
+                <p className="text-gray-600">Aucun dossier médical</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal de Gestion de la Reproduction
+const ReproductionModal = ({ isOpen, onClose, animals }) => {
+  const [reproductionRecords, setReproductionRecords] = useState([]);
+  const [newRecord, setNewRecord] = useState({
+    female_id: '',
+    male_id: '',
+    breeding_date: '',
+    expected_birth_date: '',
+    notes: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const fetchReproductionRecords = async () => {
+    try {
+      const response = await axios.get(`${API}/reproduction`);
+      setReproductionRecords(response.data);
+    } catch (error) {
+      console.error('Error fetching reproduction records:', error);
+    }
+  };
+
+  const submitReproductionRecord = async (e) => {
+    e.preventDefault();
+    if (!newRecord.female_id || !newRecord.breeding_date) {
+      alert('Veuillez remplir les champs obligatoires');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const recordData = {
+        female_id: newRecord.female_id,
+        male_id: newRecord.male_id || null,
+        breeding_date: new Date(newRecord.breeding_date).toISOString(),
+        expected_birth_date: newRecord.expected_birth_date ? new Date(newRecord.expected_birth_date).toISOString() : null,
+        notes: newRecord.notes || null
+      };
+
+      await axios.post(`${API}/reproduction`, recordData);
+      
+      setNewRecord({
+        female_id: '',
+        male_id: '',
+        breeding_date: '',
+        expected_birth_date: '',
+        notes: ''
+      });
+      
+      fetchReproductionRecords();
+      alert('🐣 Dossier de reproduction créé avec succès !');
+    } catch (error) {
+      console.error('Error creating reproduction record:', error);
+      alert('❌ Erreur lors de la création du dossier de reproduction');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchReproductionRecords();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const femaleAnimals = animals.filter(a => a.sex === 'Femelle' && a.status === 'actif');
+  const maleAnimals = animals.filter(a => a.sex === 'Mâle' && a.status === 'actif');
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-pink-600 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">🐣 Gestion Reproduction</h2>
+            <button onClick={onClose} className="p-2 hover:bg-pink-700 rounded-lg">✕</button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Formulaire d'ajout */}
+          <form onSubmit={submitReproductionRecord} className="space-y-4">
+            <h3 className="text-lg font-bold text-gray-800">💕 Nouveau Cycle de Reproduction</h3>
+            
+            {/* Femelle */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Femelle *</label>
+              <select
+                value={newRecord.female_id}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, female_id: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500"
+                required
+              >
+                <option value="">Sélectionner une femelle...</option>
+                {femaleAnimals.map(animal => (
+                  <option key={animal.id} value={animal.id}>
+                    ♀️ {animal.name} ({animal.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Mâle */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Mâle</label>
+              <select
+                value={newRecord.male_id}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, male_id: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500"
+              >
+                <option value="">Sélectionner un mâle...</option>
+                {maleAnimals.map(animal => (
+                  <option key={animal.id} value={animal.id}>
+                    ♂️ {animal.name} ({animal.category})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date d'accouplement */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Date d'accouplement *</label>
+              <input
+                type="date"
+                value={newRecord.breeding_date}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, breeding_date: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500"
+                required
+              />
+            </div>
+
+            {/* Date de naissance prévue */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Date de naissance prévue</label>
+              <input
+                type="date"
+                value={newRecord.expected_birth_date}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, expected_birth_date: e.target.value }))}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500"
+              />
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+              <textarea
+                value={newRecord.notes}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Observations, conditions particulières..."
+                className="w-full p-3 border border-gray-300 rounded-xl h-20 focus:ring-2 focus:ring-pink-500"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-pink-600 text-white rounded-xl font-medium hover:bg-pink-700 disabled:opacity-50"
+            >
+              {loading ? 'Enregistrement...' : '🐣 Enregistrer la Reproduction'}
+            </button>
+          </form>
+
+          {/* Cycles de reproduction actifs */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">🤱 Cycles Actifs</h3>
+            {reproductionRecords.length > 0 ? (
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {reproductionRecords.slice(0, 8).map((record) => {
+                  const female = animals.find(a => a.id === record.female_id);
+                  const male = record.male_id ? animals.find(a => a.id === record.male_id) : null;
+                  const isExpectingBirth = record.expected_birth_date && !record.actual_birth_date;
+                  
+                  return (
+                    <div key={record.id} className={`p-3 rounded-lg border ${isExpectingBirth ? 'bg-pink-50 border-pink-200' : 'bg-gray-50'}`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-semibold text-sm text-gray-800">
+                            ♀️ {female ? female.name : 'Femelle non trouvée'}
+                          </p>
+                          {male && (
+                            <p className="text-xs text-gray-600">♂️ {male.name}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          {new Date(record.breeding_date).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
+                      {isExpectingBirth && (
+                        <div className="bg-pink-100 p-2 rounded text-center">
+                          <p className="text-sm font-medium text-pink-700">
+                            🤰 Naissance prévue le {new Date(record.expected_birth_date).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      )}
+                      {record.actual_birth_date && (
+                        <div className="bg-green-100 p-2 rounded text-center">
+                          <p className="text-sm font-medium text-green-700">
+                            🐣 Naissance le {new Date(record.actual_birth_date).toLocaleDateString('fr-FR')}
+                            {record.offspring_count && ` - ${record.offspring_count} petit(s)`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-2">🐣</div>
+                <p className="text-gray-600">Aucun cycle de reproduction</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Modal d'Historique
+const HistoryModal = ({ isOpen, onClose, animals }) => {
+  const [historyEvents, setHistoryEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [selectedAnimal, setSelectedAnimal] = useState('');
+  const [selectedEventType, setSelectedEventType] = useState('');
+
+  const eventTypes = {
+    'naissance': { icon: '🐣', label: 'Naissance', color: 'text-green-600' },
+    'vente': { icon: '💰', label: 'Vente', color: 'text-orange-600' },
+    'medical': { icon: '🏥', label: 'Médical', color: 'text-blue-600' },
+    'reproduction': { icon: '💕', label: 'Reproduction', color: 'text-pink-600' },
+    'alimentation': { icon: '🌾', label: 'Alimentation', color: 'text-yellow-600' },
+    'autre': { icon: '📋', label: 'Autre', color: 'text-gray-600' }
+  };
+
+  const fetchHistory = async () => {
+    try {
+      const response = await axios.get(`${API}/history`);
+      setHistoryEvents(response.data);
+      setFilteredEvents(response.data);
+    } catch (error) {
+      console.error('Error fetching history:', error);
+    }
+  };
+
+  const filterEvents = () => {
+    let filtered = historyEvents;
+    
+    if (selectedAnimal) {
+      filtered = filtered.filter(event => event.animal_id === selectedAnimal);
+    }
+    
+    if (selectedEventType) {
+      filtered = filtered.filter(event => event.event_type === selectedEventType);
+    }
+    
+    setFilteredEvents(filtered);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchHistory();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    filterEvents();
+  }, [selectedAnimal, selectedEventType, historyEvents]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gray-700 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">📚 Historique Complet</h2>
+            <button onClick={onClose} className="p-2 hover:bg-gray-800 rounded-lg">✕</button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Filtres */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-bold text-gray-800">🔍 Filtrer l'historique</h3>
+            
+            {/* Filtre par animal */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Animal</label>
+              <select
+                value={selectedAnimal}
+                onChange={(e) => setSelectedAnimal(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500"
+              >
+                <option value="">Tous les animaux</option>
+                {animals.map(animal => (
+                  <option key={animal.id} value={animal.id}>
+                    {animal.type === 'poulet' ? '🐔' : '🐷'} {animal.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtre par type d'événement */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Type d'événement</label>
+              <select
+                value={selectedEventType}
+                onChange={(e) => setSelectedEventType(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-500"
+              >
+                <option value="">Tous les événements</option>
+                {Object.entries(eventTypes).map(([key, type]) => (
+                  <option key={key} value={key}>
+                    {type.icon} {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Historique des événements */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">
+              📊 Événements ({filteredEvents.length})
+            </h3>
+            
+            {filteredEvents.length > 0 ? (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {filteredEvents.map((event) => {
+                  const animal = event.animal_id ? animals.find(a => a.id === event.animal_id) : null;
+                  const eventInfo = eventTypes[event.event_type] || eventTypes.autre;
+                  
+                  return (
+                    <div key={event.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg">{eventInfo.icon}</span>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-800">{event.title}</p>
+                            {animal && (
+                              <p className="text-xs text-gray-600">
+                                {animal.type === 'poulet' ? '🐔' : '🐷'} {animal.name}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs text-gray-500">
+                            {new Date(event.date).toLocaleDateString('fr-FR')}
+                          </span>
+                          <span className={`block text-xs font-medium ${eventInfo.color}`}>
+                            {eventInfo.label}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{event.description}</p>
+                      {event.cost && (
+                        <div className="bg-green-100 px-2 py-1 rounded text-center">
+                          <p className="text-sm font-medium text-green-700">
+                            💰 Coût: {event.cost.toLocaleString()} FCFA
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">📚</div>
+                <p className="text-gray-600">Aucun événement trouvé</p>
+                <p className="text-sm text-gray-500">Modifiez vos filtres pour voir plus d'événements</p>
+              </div>
+            )}
+          </div>
+
+          {/* Statistiques rapides */}
+          <div className="bg-gray-50 p-4 rounded-xl">
+            <h4 className="font-bold text-gray-800 mb-2">📈 Résumé</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-center">
+                <p className="font-semibold text-blue-600">{historyEvents.filter(e => e.event_type === 'medical').length}</p>
+                <p className="text-gray-600">Soins médicaux</p>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-pink-600">{historyEvents.filter(e => e.event_type === 'reproduction').length}</p>
+                <p className="text-gray-600">Reproductions</p>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-green-600">{historyEvents.filter(e => e.event_type === 'naissance').length}</p>
+                <p className="text-gray-600">Naissances</p>
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-orange-600">{historyEvents.filter(e => e.event_type === 'vente').length}</p>
+                <p className="text-gray-600">Ventes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Section Finances pour suivre les recettes
+const FinancesModal = ({ isOpen, onClose, animals }) => {
+  if (!isOpen) return null;
+
+  // Calculer les statistiques financières
+  const soldAnimals = animals.filter(animal => animal.status === 'vendu');
+  const activeAnimals = animals.filter(animal => animal.status === 'actif');
+  
+  // Prix moyens par type d'animal (vous pouvez ajuster ces valeurs)
+  const pricePerType = {
+    poulet: 5000, // 5000 FCFA par poulet
+    porc: 150000  // 150000 FCFA par porc
+  };
+  
+  // Calcul des recettes
+  const totalRevenue = soldAnimals.reduce((total, animal) => {
+    const price = pricePerType[animal.type] || 0;
+    return total + price;
+  }, 0);
+  
+  // Calcul de la valeur du cheptel actif
+  const activeValue = activeAnimals.reduce((total, animal) => {
+    const price = pricePerType[animal.type] || 0;
+    return total + price;
+  }, 0);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-orange-600 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">💰 Finances & Recettes</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-orange-700 rounded-lg transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu finances */}
+        <div className="p-6 space-y-6">
+          {/* Résumé financier */}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">💰</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-green-700">RECETTES TOTALES</h3>
+                  <p className="text-2xl font-bold text-green-800">{formatCurrency(totalRevenue)}</p>
+                  <p className="text-xs text-green-600">{soldAnimals.length} animaux vendus</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">🏦</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-blue-700">VALEUR CHEPTEL ACTIF</h3>
+                  <p className="text-2xl font-bold text-blue-800">{formatCurrency(activeValue)}</p>
+                  <p className="text-xs text-blue-600">{activeAnimals.length} animaux actifs</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-purple-700">VALEUR TOTALE</h3>
+                  <p className="text-2xl font-bold text-purple-800">{formatCurrency(totalRevenue + activeValue)}</p>
+                  <p className="text-xs text-purple-600">Recettes + Valeur actuelle</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Détail des ventes */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📋 Historique des Ventes</h3>
+            
+            {soldAnimals.length > 0 ? (
+              <div className="space-y-3">
+                {soldAnimals.map((animal) => (
+                  <div key={animal.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">{animal.type === 'poulet' ? '🐔' : '🐷'}</span>
+                        <div>
+                          <p className="font-semibold text-gray-800">{animal.name}</p>
+                          <p className="text-sm text-gray-600">{animal.category}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">
+                          {formatCurrency(pricePerType[animal.type] || 0)}
+                        </p>
+                        <p className="text-xs text-gray-500">Vendu</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-2">📈</div>
+                <p className="text-gray-600">Aucune vente enregistrée</p>
+                <p className="text-sm text-gray-500">Les animaux vendus apparaîtront ici</p>
+              </div>
+            )}
+          </div>
+
+          {/* Statistiques par type */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📊 Recettes par Type</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <div className="text-center">
+                  <span className="text-2xl">🐔</span>
+                  <p className="text-sm font-semibold text-yellow-700">Poulets</p>
+                  <p className="text-lg font-bold text-yellow-800">
+                    {formatCurrency(soldAnimals.filter(a => a.type === 'poulet').length * pricePerType.poulet)}
+                  </p>
+                  <p className="text-xs text-yellow-600">
+                    {soldAnimals.filter(a => a.type === 'poulet').length} vendus
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                <div className="text-center">
+                  <span className="text-2xl">🐷</span>
+                  <p className="text-sm font-semibold text-pink-700">Porcs</p>
+                  <p className="text-lg font-bold text-pink-800">
+                    {formatCurrency(soldAnimals.filter(a => a.type === 'porc').length * pricePerType.porc)}
+                  </p>
+                  <p className="text-xs text-pink-600">
+                    {soldAnimals.filter(a => a.type === 'porc').length} vendus
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Formulaire d'ajout d'animal mobile
 const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -247,168 +1052,6 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   );
 };
 
-// Section Finances pour suivre les recettes
-const FinancesModal = ({ isOpen, onClose, animals }) => {
-  if (!isOpen) return null;
-
-  // Calculer les statistiques financières
-  const soldAnimals = animals.filter(animal => animal.status === 'vendu');
-  const activeAnimals = animals.filter(animal => animal.status === 'actif');
-  
-  // Prix moyens par type d'animal (vous pouvez ajuster ces valeurs)
-  const pricePerType = {
-    poulet: 5000, // 5000 FCFA par poulet
-    porc: 150000  // 150000 FCFA par porc
-  };
-  
-  // Calcul des recettes
-  const totalRevenue = soldAnimals.reduce((total, animal) => {
-    const price = pricePerType[animal.type] || 0;
-    return total + price;
-  }, 0);
-  
-  // Calcul de la valeur du cheptel actif
-  const activeValue = activeAnimals.reduce((total, animal) => {
-    const price = pricePerType[animal.type] || 0;
-    return total + price;
-  }, 0);
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-orange-600 text-white p-4 rounded-t-2xl">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">💰 Finances & Recettes</h2>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-orange-700 rounded-lg transition-colors"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
-        {/* Contenu finances */}
-        <div className="p-6 space-y-6">
-          {/* Résumé financier */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">💰</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-green-700">RECETTES TOTALES</h3>
-                  <p className="text-2xl font-bold text-green-800">{formatCurrency(totalRevenue)}</p>
-                  <p className="text-xs text-green-600">{soldAnimals.length} animaux vendus</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">🏦</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-blue-700">VALEUR CHEPTEL ACTIF</h3>
-                  <p className="text-2xl font-bold text-blue-800">{formatCurrency(activeValue)}</p>
-                  <p className="text-xs text-blue-600">{activeAnimals.length} animaux actifs</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">📊</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-purple-700">VALEUR TOTALE</h3>
-                  <p className="text-2xl font-bold text-purple-800">{formatCurrency(totalRevenue + activeValue)}</p>
-                  <p className="text-xs text-purple-600">Recettes + Valeur actuelle</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Détail des ventes */}
-          <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">📋 Historique des Ventes</h3>
-            
-            {soldAnimals.length > 0 ? (
-              <div className="space-y-3">
-                {soldAnimals.map((animal) => (
-                  <div key={animal.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">{animal.type === 'poulet' ? '🐔' : '🐷'}</span>
-                        <div>
-                          <p className="font-semibold text-gray-800">{animal.name}</p>
-                          <p className="text-sm text-gray-600">{animal.category}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-green-600">
-                          {formatCurrency(pricePerType[animal.type] || 0)}
-                        </p>
-                        <p className="text-xs text-gray-500">Vendu</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <div className="text-4xl mb-2">📈</div>
-                <p className="text-gray-600">Aucune vente enregistrée</p>
-                <p className="text-sm text-gray-500">Les animaux vendus apparaîtront ici</p>
-              </div>
-            )}
-          </div>
-
-          {/* Statistiques par type */}
-          <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-4">📊 Recettes par Type</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                <div className="text-center">
-                  <span className="text-2xl">🐔</span>
-                  <p className="text-sm font-semibold text-yellow-700">Poulets</p>
-                  <p className="text-lg font-bold text-yellow-800">
-                    {formatCurrency(soldAnimals.filter(a => a.type === 'poulet').length * pricePerType.poulet)}
-                  </p>
-                  <p className="text-xs text-yellow-600">
-                    {soldAnimals.filter(a => a.type === 'poulet').length} vendus
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
-                <div className="text-center">
-                  <span className="text-2xl">🐷</span>
-                  <p className="text-sm font-semibold text-pink-700">Porcs</p>
-                  <p className="text-lg font-bold text-pink-800">
-                    {formatCurrency(soldAnimals.filter(a => a.type === 'porc').length * pricePerType.porc)}
-                  </p>
-                  <p className="text-xs text-pink-600">
-                    {soldAnimals.filter(a => a.type === 'porc').length} vendus
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Menu mobile optimisé avec navigation française
 const MobileMenu = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -451,20 +1094,26 @@ const MobileMenu = ({ isOpen, onClose }) => {
             </li>
             <li>
               <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
-                <span className="text-xl mr-3">📊</span>
-                <span className="font-medium">Rapports</span>
+                <span className="text-xl mr-3">🏥</span>
+                <span className="font-medium">Gestion médicale</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">🐣</span>
+                <span className="font-medium">Reproduction</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">📚</span>
+                <span className="font-medium">Historique</span>
               </a>
             </li>
             <li>
               <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
                 <span className="text-xl mr-3">⚙️</span>
                 <span className="font-medium">Paramètres</span>
-              </a>
-            </li>
-            <li>
-              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
-                <span className="text-xl mr-3">📱</span>
-                <span className="font-medium">Version mobile</span>
               </a>
             </li>
           </ul>
@@ -479,8 +1128,8 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Mobile Header Component with Hamburger et bouton finances
-const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick }) => {
+// Mobile Header Component with all new features
+const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick, onMedicalClick, onReproductionClick, onHistoryClick }) => {
   return (
     <header className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 sticky top-0 z-40 shadow-lg">
       <div className="flex items-center justify-between">
@@ -490,21 +1139,40 @@ const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick }) => {
           </div>
           <div>
             <h1 className="text-xl font-bold">Élevage la Providence</h1>
-            <p className="text-sm opacity-90">Mobile - Gestion d'élevage</p>
+            <p className="text-sm opacity-90">Gestion Complète Mobile</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          {/* Boutons principaux (visible sur mobile) */}
+          <button
+            onClick={onMedicalClick}
+            className="bg-blue-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-blue-700 transform active:scale-95 transition-all shadow-md"
+          >
+            🏥
+          </button>
+          <button
+            onClick={onReproductionClick}
+            className="bg-pink-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-pink-700 transform active:scale-95 transition-all shadow-md"
+          >
+            🐣
+          </button>
+          <button
+            onClick={onHistoryClick}
+            className="bg-gray-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-gray-700 transform active:scale-95 transition-all shadow-md"
+          >
+            📚
+          </button>
           <button
             onClick={onFinancesClick}
-            className="bg-orange-600 px-3 py-2 rounded-lg text-sm font-medium active:bg-orange-700 transform active:scale-95 transition-all shadow-md"
+            className="bg-orange-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-orange-700 transform active:scale-95 transition-all shadow-md"
           >
-            💰 Finances
+            💰
           </button>
           <button
             onClick={onAddAnimal}
-            className="bg-green-700 px-3 py-2 rounded-lg text-sm font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
+            className="bg-green-700 px-2 py-2 rounded-lg text-xs font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
           >
-            + Animal
+            + 🐄
           </button>
           <button
             onClick={onMenuToggle}
@@ -518,7 +1186,7 @@ const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick }) => {
   );
 };
 
-// Statistics Card Component with better mobile design
+// Statistics Card Component avec meilleur design mobile
 const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   return (
     <div className={`${color} rounded-xl p-4 text-white shadow-lg transform transition-transform active:scale-95 ${className}`}>
@@ -534,12 +1202,23 @@ const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   );
 };
 
-// Animal Card Component for Mobile - Avec fonction de vente
-const AnimalCard = ({ animal, onEdit, onDelete, onSell }) => {
+// Animal Card Component for Mobile - Avec nouveaux boutons d'action
+const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproduction, onHistory }) => {
   const animalIcon = animal.type === 'poulet' ? '🐔' : '🐷';
   const sexIcon = animal.sex === 'Mâle' ? '♂️' : '♀️';
   const sexColor = animal.sex === 'Mâle' ? 'text-blue-600' : 'text-pink-600';
   const isActive = animal.status === 'actif';
+  
+  // Status de reproduction
+  const reproductionStatus = {
+    'disponible': { icon: '✅', label: 'Disponible', color: 'text-green-600' },
+    'gestante': { icon: '🤰', label: 'Gestante', color: 'text-pink-600' },
+    'allaitante': { icon: '🍼', label: 'Allaitante', color: 'text-blue-600' },
+    'reproduction': { icon: '💕', label: 'En reproduction', color: 'text-purple-600' },
+    'repos': { icon: '😴', label: 'Au repos', color: 'text-gray-600' }
+  };
+  
+  const reproStatus = reproductionStatus[animal.reproduction_status] || reproductionStatus.disponible;
   
   return (
     <div className={`rounded-xl p-4 shadow-md border mb-4 transform transition-transform active:scale-[0.98] ${
@@ -558,11 +1237,18 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell }) => {
               {animal.name}
             </h3>
             <p className="text-sm text-gray-600">{animal.category}</p>
-            {!isActive && (
-              <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium">
-                💰 Vendu
-              </span>
-            )}
+            <div className="flex items-center space-x-2 mt-1">
+              {!isActive && (
+                <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium">
+                  💰 Vendu
+                </span>
+              )}
+              {animal.reproduction_status && animal.reproduction_status !== 'disponible' && (
+                <span className={`text-xs ${reproStatus.color}`}>
+                  {reproStatus.icon} {reproStatus.label}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -586,33 +1272,63 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell }) => {
         </div>
       </div>
       
-      {/* Boutons d'action */}
-      <div className="flex space-x-2">
-        <button
-          onClick={() => onEdit(animal)}
-          className="flex-1 py-3 px-4 bg-blue-50 text-blue-600 rounded-xl font-medium active:bg-blue-100 transition-colors flex items-center justify-center space-x-2"
-        >
-          <span>✏️</span>
-          <span>Modifier</span>
-        </button>
+      {/* Boutons d'action étendus */}
+      <div className="space-y-2">
+        {/* Première ligne : Actions principales */}
+        <div className="flex space-x-2">
+          <button
+            onClick={() => onEdit(animal)}
+            className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-medium active:bg-blue-100 transition-colors flex items-center justify-center space-x-1"
+          >
+            <span>✏️</span>
+            <span>Modifier</span>
+          </button>
+          
+          {isActive ? (
+            <button
+              onClick={() => onSell(animal.id)}
+              className="flex-1 py-2 px-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-medium active:bg-orange-100 transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>💰</span>
+              <span>Vendre</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => onDelete(animal.id)}
+              className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>🗑️</span>
+              <span>Supprimer</span>
+            </button>
+          )}
+        </div>
         
-        {isActive ? (
+        {/* Deuxième ligne : Actions spécialisées */}
+        <div className="flex space-x-2">
           <button
-            onClick={() => onSell(animal.id)}
-            className="flex-1 py-3 px-4 bg-orange-50 text-orange-600 rounded-xl font-medium active:bg-orange-100 transition-colors flex items-center justify-center space-x-2"
+            onClick={() => onMedical(animal.id)}
+            className="flex-1 py-2 px-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium active:bg-green-100 transition-colors flex items-center justify-center space-x-1"
           >
-            <span>💰</span>
-            <span>Vendre</span>
+            <span>🏥</span>
+            <span>Médical</span>
           </button>
-        ) : (
+          
           <button
-            onClick={() => onDelete(animal.id)}
-            className="flex-1 py-3 px-4 bg-red-50 text-red-600 rounded-xl font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-2"
+            onClick={() => onReproduction(animal.id)}
+            className="flex-1 py-2 px-3 bg-pink-50 text-pink-600 rounded-xl text-sm font-medium active:bg-pink-100 transition-colors flex items-center justify-center space-x-1"
           >
-            <span>🗑️</span>
-            <span>Supprimer</span>
+            <span>🐣</span>
+            <span>Reproduction</span>
           </button>
-        )}
+          
+          <button
+            onClick={() => onHistory(animal.id)}
+            className="flex-1 py-2 px-3 bg-gray-50 text-gray-600 rounded-xl text-sm font-medium active:bg-gray-100 transition-colors flex items-center justify-center space-x-1"
+          >
+            <span>📚</span>
+            <span>Historique</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -712,7 +1428,7 @@ const FilterSection = ({ filters, onFilterChange, animals }) => {
   );
 };
 
-// Main Home Component avec fonctionnalité d'ajout et finances
+// Main Home Component avec toutes les nouvelles fonctionnalités
 const Home = () => {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});
@@ -721,6 +1437,9 @@ const Home = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFinancesModalOpen, setIsFinancesModalOpen] = useState(false);
+  const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
+  const [isReproductionModalOpen, setIsReproductionModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
   // Fetch data
   const fetchAnimals = async () => {
@@ -783,20 +1502,29 @@ const Home = () => {
     fetchStats(); // Refresh statistics
   };
 
-  const openAddModal = () => {
-    setIsAddModalOpen(true);
+  // Modal control functions
+  const openAddModal = () => setIsAddModalOpen(true);
+  const closeAddModal = () => setIsAddModalOpen(false);
+  const openFinancesModal = () => setIsFinancesModalOpen(true);
+  const closeFinancesModal = () => setIsFinancesModalOpen(false);
+  const openMedicalModal = () => setIsMedicalModalOpen(true);
+  const closeMedicalModal = () => setIsMedicalModalOpen(false);
+  const openReproductionModal = () => setIsReproductionModalOpen(true);
+  const closeReproductionModal = () => setIsReproductionModalOpen(false);
+  const openHistoryModal = () => setIsHistoryModalOpen(true);
+  const closeHistoryModal = () => setIsHistoryModalOpen(false);
+
+  // Handlers for animal-specific actions
+  const handleAnimalMedical = (animalId) => {
+    openMedicalModal();
   };
 
-  const closeAddModal = () => {
-    setIsAddModalOpen(false);
+  const handleAnimalReproduction = (animalId) => {
+    openReproductionModal();
   };
 
-  const openFinancesModal = () => {
-    setIsFinancesModalOpen(true);
-  };
-
-  const closeFinancesModal = () => {
-    setIsFinancesModalOpen(false);
+  const handleAnimalHistory = (animalId) => {
+    openHistoryModal();
   };
 
   // Filter animals based on current filters
@@ -832,6 +1560,9 @@ const Home = () => {
         onAddAnimal={openAddModal} 
         onMenuToggle={() => setIsMenuOpen(true)}
         onFinancesClick={openFinancesModal}
+        onMedicalClick={openMedicalModal}
+        onReproductionClick={openReproductionModal}
+        onHistoryClick={openHistoryModal}
       />
       
       <MobileMenu 
@@ -839,6 +1570,7 @@ const Home = () => {
         onClose={() => setIsMenuOpen(false)} 
       />
       
+      {/* Toutes les modales */}
       <AddAnimalModal
         isOpen={isAddModalOpen}
         onClose={closeAddModal}
@@ -848,6 +1580,24 @@ const Home = () => {
       <FinancesModal
         isOpen={isFinancesModalOpen}
         onClose={closeFinancesModal}
+        animals={animals}
+      />
+
+      <MedicalModal
+        isOpen={isMedicalModalOpen}
+        onClose={closeMedicalModal}
+        animals={animals}
+      />
+
+      <ReproductionModal
+        isOpen={isReproductionModalOpen}
+        onClose={closeReproductionModal}
+        animals={animals}
+      />
+
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={closeHistoryModal}
         animals={animals}
       />
       
@@ -901,6 +1651,31 @@ const Home = () => {
           />
         </div>
         
+        {/* New Statistics Row */}
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard
+            icon="🏥"
+            title="Soins"
+            value={stats.medical_records || 0}
+            subtitle="Dossiers médicaux"
+            color="bg-gradient-to-r from-blue-600 to-blue-700"
+          />
+          <StatCard
+            icon="🐣"
+            title="Reprod."
+            value={stats.reproduction_records || 0}
+            subtitle="Cycles actifs"
+            color="bg-gradient-to-r from-pink-600 to-pink-700"
+          />
+          <StatCard
+            icon="🤰"
+            title="Gestantes"
+            value={stats.pregnant_animals || 0}
+            subtitle="En gestation"
+            color="bg-gradient-to-r from-purple-600 to-purple-700"
+          />
+        </div>
+        
         {/* Bottom Row */}
         <div className="grid grid-cols-1 gap-4">
           <StatCard
@@ -936,6 +1711,9 @@ const Home = () => {
               onEdit={() => alert('Fonctionnalité Modifier à venir')}
               onDelete={deleteAnimal}
               onSell={sellAnimal}
+              onMedical={handleAnimalMedical}
+              onReproduction={handleAnimalReproduction}
+              onHistory={handleAnimalHistory}
             />
           ))}
         </div>
@@ -967,7 +1745,7 @@ const Home = () => {
       
       {/* Badge version mobile */}
       <div className="fixed bottom-20 right-6 bg-white px-3 py-2 rounded-full shadow-lg border lg:hidden">
-        <span className="text-xs text-gray-600">📱 Version mobile optimisée</span>
+        <span className="text-xs text-gray-600">📱 Gestion Complète Mobile</span>
       </div>
     </div>
   );

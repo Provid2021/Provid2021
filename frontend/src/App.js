@@ -260,16 +260,29 @@ function App() {
         `${API_BASE_URL}/api/animals/${selectedAnimal.id}` : 
         `${API_BASE_URL}/api/animals`;
       
-      // Ensure proper data types and clean data
+      // Prepare data based on animal type
       const submitData = {
         type: formData.type,
         race: formData.race === 'Autre' ? formData.raceAutre.trim() : formData.race,
-        sexe: formData.sexe,
         date_naissance: formData.date_naissance,
         poids: parseFloat(formData.poids),
         nom: formData.nom.trim(),
-        notes: formData.notes.trim()
+        notes: formData.notes.trim(),
+        photo_url: formData.photo_url ? formData.photo_url.trim() : null
       };
+
+      // Add type-specific fields
+      if (formData.type === 'poulet') {
+        // For poulets (waves)
+        submitData.nombre_animaux = parseInt(formData.nombre_animaux) || 1;
+        submitData.numero_vague = formData.numero_vague.trim();
+        submitData.sexe = null; // No sex for poulet waves
+      } else {
+        // For porcs (individual)
+        submitData.sexe = formData.sexe;
+        submitData.nombre_animaux = 1;
+        submitData.numero_vague = null;
+      }
       
       const response = await fetch(url, {
         method: method,
@@ -290,13 +303,25 @@ function App() {
           date_naissance: '',
           poids: '',
           nom: '',
-          notes: ''
+          notes: '',
+          nombre_animaux: '',
+          numero_vague: '',
+          photo_url: ''
         });
         fetchAnimals();
         fetchStats();
+        
+        const message = formData.type === 'poulet' ? 
+          `Vague de ${formData.nombre_animaux} poulets ajoutée avec succès !` :
+          'Porc ajouté avec succès !';
+        alert(message);
+      } else {
+        const errorData = await response.json();
+        alert(`Erreur lors de la sauvegarde: ${errorData.detail || 'Erreur inconnue'}`);
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur de connexion. Veuillez réessayer.');
     }
     setLoading(false);
   };

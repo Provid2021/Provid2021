@@ -496,13 +496,39 @@ async def get_upcoming_births():
 @app.get("/api/animals/breeding-males/{animal_type}")
 async def get_breeding_males(animal_type: str):
     try:
-        # Get all male animals of the specified type for breeding selection
+        # Get all male animals of the specified type for breeding selection (only active)
         males = list(animals_collection.find({
             "type": animal_type,
-            "sexe": "M"
+            "sexe": "M",
+            "statut": "actif"
         }, {"_id": 0}).sort("nom", 1))
         
         return {"breeding_males": males, "total": len(males)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
+
+@app.put("/api/animals/{animal_id}/sell")
+async def sell_animal(animal_id: str, prix_vente: float, date_vente: str):
+    try:
+        animal = animals_collection.find_one({"id": animal_id})
+        if not animal:
+            raise HTTPException(status_code=404, detail="Animal non trouvé")
+        
+        # Update animal status to sold
+        result = animals_collection.update_one(
+            {"id": animal_id},
+            {"$set": {
+                "statut": "vendu",
+                "date_vente": date_vente,
+                "prix_vente": prix_vente,
+                "updated_at": datetime.now().isoformat()
+            }}
+        )
+        
+        if result.modified_count > 0:
+            return {"message": "Animal marqué comme vendu avec succès"}
+        else:
+            raise HTTPException(status_code=500, detail="Erreur lors de la mise à jour")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 

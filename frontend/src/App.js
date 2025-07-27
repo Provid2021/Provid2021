@@ -57,6 +57,8 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [filterType, setFilterType] = useState('');
+  const [filterCategory, setFilterCategory] = useState(''); // New filter for categories
+  const [sortBy, setSortBy] = useState('age'); // New sort option
   const [loading, setLoading] = useState(false);
   
   // Medical records states

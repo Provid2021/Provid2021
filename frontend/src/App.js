@@ -285,30 +285,99 @@ function App() {
     fetchMedicalRecords(animal.id);
   };
 
-  const handleMarkReminderDone = async (recordId) => {
-    if (window.confirm('Marquer ce rappel comme effectué (supprime la date de rappel) ?')) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/medical-records/${recordId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            date_rappel: null // Remove the reminder date
-          }),
-        });
-        
-        if (response.ok) {
-          fetchUpcomingReminders(); // Refresh reminders
-          alert('Rappel marqué comme effectué !');
-        } else {
-          alert('Erreur lors de la mise à jour');
-        }
-      } catch (error) {
-        console.error('Erreur:', error);
-        alert('Erreur de connexion');
-      }
+  const handleClickReminder = async (reminder) => {
+    // Find the animal for this reminder
+    const animal = animals.find(a => a.id === reminder.animal_id);
+    if (!animal) {
+      alert('Animal non trouvé');
+      return;
     }
+    
+    setSelectedReminder(reminder);
+    setSelectedAnimalForMedical(animal);
+    
+    // Pre-fill the form with reminder data and today's date
+    const today = new Date().toISOString().split('T')[0];
+    setMedicalFormData({
+      date_intervention: today,
+      type_intervention: reminder.type_intervention,
+      medicament: reminder.medicament || '',
+      veterinaire: reminder.veterinaire || '',
+      cout: reminder.cout ? reminder.cout.toString() : '',
+      notes: `Suivi du rappel du ${formatDate(reminder.date_rappel)}. ${reminder.notes || ''}`.trim(),
+      date_rappel: '' // New reminder date if needed
+    });
+    
+    setShowReminderModal(true);
+  };
+
+  const handleCompleteReminder = async (e) => {
+    e.preventDefault();
+    
+    if (!medicalFormData.date_intervention || !medicalFormData.type_intervention) {
+      alert('Veuillez remplir les champs obligatoires');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // 1. Create new medical record
+      const newRecordData = {
+        animal_id: selectedAnimalForMedical.id,
+        date_intervention: medicalFormData.date_intervention,
+        type_intervention: medicalFormData.type_intervention,
+        medicament: medicalFormData.medicament ? medicalFormData.medicament.trim() : '',
+        veterinaire: medicalFormData.veterinaire ? medicalFormData.veterinaire.trim() : '',
+        cout: medicalFormData.cout ? parseFloat(medicalFormData.cout) : null,
+        notes: medicalFormData.notes ? medicalFormData.notes.trim() : '',
+        date_rappel: medicalFormData.date_rappel || null
+      };
+      
+      const createResponse = await fetch(`${API_BASE_URL}/api/medical-records`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newRecordData),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Erreur lors de la création du nouveau dossier');
+      }
+
+      // 2. Delete the old reminder record
+      const deleteResponse = await fetch(`${API_BASE_URL}/api/medical-records/${selectedReminder.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!deleteResponse.ok) {
+        throw new Error('Erreur lors de la suppression de l\'ancien rappel');
+      }
+
+      // 3. Reset and refresh
+      setShowReminderModal(false);
+      setSelectedReminder(null);
+      setSelectedAnimalForMedical(null);
+      setMedicalFormData({
+        date_intervention: '',
+        type_intervention: '',
+        medicament: '',
+        veterinaire: '',
+        cout: '',
+        notes: '',
+        date_rappel: ''
+      });
+      
+      await fetchUpcomingReminders();
+      alert('Rappel complété avec succès !');
+      
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert(`Erreur: ${error.message}`);
+    }
+    
+    setLoading(false);
   };
 
   const handleDeleteMedicalRecord = async (recordId) => {

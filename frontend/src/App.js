@@ -1096,55 +1096,88 @@ function App() {
         <div className="bg-white rounded-xl shadow-lg mb-8 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtres et tri</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {/* Status Filter */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-3 block">Statut des animaux:</label>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setFilterStatus('actif');
+                    setFilterCategory('');
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    filterStatus === 'actif' 
+                      ? 'bg-green-500 text-white shadow-lg' 
+                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                  }`}
+                >
+                  🟢 Actifs ({stats.total_animals || 0})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterStatus('vendu');
+                    setFilterCategory('');
+                  }}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    filterStatus === 'vendu' 
+                      ? 'bg-orange-500 text-white shadow-lg' 
+                      : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                  }`}
+                >
+                  🔶 Vendus ({stats.total_vendus || 0})
+                </button>
+              </div>
+            </div>
+
             {/* Type Filter */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-3 block">Filtrer par type:</label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setFilterType('');
                     setFilterCategory('');
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                     filterType === '' 
                       ? 'bg-gray-600 text-white shadow-lg' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  📊 Tous ({stats.total_animals || 0})
+                  📊 Tous
                 </button>
                 <button
                   onClick={() => {
                     setFilterType('poulet');
                     setFilterCategory('');
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                     filterType === 'poulet' 
                       ? 'bg-yellow-500 text-white shadow-lg' 
                       : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                   }`}
                 >
-                  🐔 Poulets ({stats.total_poulets || 0})
+                  🐔 Poulets
                 </button>
                 <button
                   onClick={() => {
                     setFilterType('porc');
                     setFilterCategory('');
                   }}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                     filterType === 'porc' 
                       ? 'bg-pink-500 text-white shadow-lg' 
                       : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
                   }`}
                 >
-                  🐷 Porcs ({stats.total_porcs || 0})
+                  🐷 Porcs
                 </button>
               </div>
             </div>
 
             {/* Category Filter */}
-            {filterType && (
+            {filterType && filterStatus === 'actif' && (
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-3 block">Filtrer par catégorie:</label>
                 <select
@@ -1175,6 +1208,9 @@ function App() {
                 <option value="weight">Poids (plus léger d'abord)</option>
                 <option value="weight_desc">Poids (plus lourd d'abord)</option>
                 <option value="name">Nom (A-Z)</option>
+                {filterStatus === 'vendu' && (
+                  <option value="date_vente">Date de vente (récente d'abord)</option>
+                )}
               </select>
             </div>
           </div>

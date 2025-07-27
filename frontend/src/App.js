@@ -84,6 +84,12 @@ function App() {
   const [profileMedicalRecords, setProfileMedicalRecords] = useState([]);
   const [profileReproductionEvents, setProfileReproductionEvents] = useState([]);
 
+  // Financial states
+  const [showFinancialDashboard, setShowFinancialDashboard] = useState(false);
+  const [showAddFinancialForm, setShowAddFinancialForm] = useState(false);
+  const [financialRecords, setFinancialRecords] = useState([]);
+  const [financialStats, setFinancialStats] = useState({});
+
   const [formData, setFormData] = useState({
     type: 'poulet',
     race: '',

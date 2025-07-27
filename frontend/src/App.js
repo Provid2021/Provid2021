@@ -247,6 +247,168 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   );
 };
 
+// Section Finances pour suivre les recettes
+const FinancesModal = ({ isOpen, onClose, animals }) => {
+  if (!isOpen) return null;
+
+  // Calculer les statistiques financières
+  const soldAnimals = animals.filter(animal => animal.status === 'vendu');
+  const activeAnimals = animals.filter(animal => animal.status === 'actif');
+  
+  // Prix moyens par type d'animal (vous pouvez ajuster ces valeurs)
+  const pricePerType = {
+    poulet: 5000, // 5000 FCFA par poulet
+    porc: 150000  // 150000 FCFA par porc
+  };
+  
+  // Calcul des recettes
+  const totalRevenue = soldAnimals.reduce((total, animal) => {
+    const price = pricePerType[animal.type] || 0;
+    return total + price;
+  }, 0);
+  
+  // Calcul de la valeur du cheptel actif
+  const activeValue = activeAnimals.reduce((total, animal) => {
+    const price = pricePerType[animal.type] || 0;
+    return total + price;
+  }, 0);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-orange-600 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">💰 Finances & Recettes</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-orange-700 rounded-lg transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Contenu finances */}
+        <div className="p-6 space-y-6">
+          {/* Résumé financier */}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">💰</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-green-700">RECETTES TOTALES</h3>
+                  <p className="text-2xl font-bold text-green-800">{formatCurrency(totalRevenue)}</p>
+                  <p className="text-xs text-green-600">{soldAnimals.length} animaux vendus</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">🏦</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-blue-700">VALEUR CHEPTEL ACTIF</h3>
+                  <p className="text-2xl font-bold text-blue-800">{formatCurrency(activeValue)}</p>
+                  <p className="text-xs text-blue-600">{activeAnimals.length} animaux actifs</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-purple-700">VALEUR TOTALE</h3>
+                  <p className="text-2xl font-bold text-purple-800">{formatCurrency(totalRevenue + activeValue)}</p>
+                  <p className="text-xs text-purple-600">Recettes + Valeur actuelle</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Détail des ventes */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📋 Historique des Ventes</h3>
+            
+            {soldAnimals.length > 0 ? (
+              <div className="space-y-3">
+                {soldAnimals.map((animal) => (
+                  <div key={animal.id} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">{animal.type === 'poulet' ? '🐔' : '🐷'}</span>
+                        <div>
+                          <p className="font-semibold text-gray-800">{animal.name}</p>
+                          <p className="text-sm text-gray-600">{animal.category}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-green-600">
+                          {formatCurrency(pricePerType[animal.type] || 0)}
+                        </p>
+                        <p className="text-xs text-gray-500">Vendu</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-4xl mb-2">📈</div>
+                <p className="text-gray-600">Aucune vente enregistrée</p>
+                <p className="text-sm text-gray-500">Les animaux vendus apparaîtront ici</p>
+              </div>
+            )}
+          </div>
+
+          {/* Statistiques par type */}
+          <div>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">📊 Recettes par Type</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                <div className="text-center">
+                  <span className="text-2xl">🐔</span>
+                  <p className="text-sm font-semibold text-yellow-700">Poulets</p>
+                  <p className="text-lg font-bold text-yellow-800">
+                    {formatCurrency(soldAnimals.filter(a => a.type === 'poulet').length * pricePerType.poulet)}
+                  </p>
+                  <p className="text-xs text-yellow-600">
+                    {soldAnimals.filter(a => a.type === 'poulet').length} vendus
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-pink-50 p-3 rounded-lg border border-pink-200">
+                <div className="text-center">
+                  <span className="text-2xl">🐷</span>
+                  <p className="text-sm font-semibold text-pink-700">Porcs</p>
+                  <p className="text-lg font-bold text-pink-800">
+                    {formatCurrency(soldAnimals.filter(a => a.type === 'porc').length * pricePerType.porc)}
+                  </p>
+                  <p className="text-xs text-pink-600">
+                    {soldAnimals.filter(a => a.type === 'porc').length} vendus
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Menu mobile optimisé avec navigation française
 const MobileMenu = ({ isOpen, onClose }) => {
   if (!isOpen) return null;

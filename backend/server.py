@@ -235,20 +235,25 @@ async def delete_animal(animal_id: str):
 @app.get("/api/stats")
 async def get_stats():
     try:
-        total_animals = animals_collection.count_documents({})
-        total_poulets = animals_collection.count_documents({"type": "poulet"})
-        total_porcs = animals_collection.count_documents({"type": "porc"})
+        # Only count active animals
+        total_animals = animals_collection.count_documents({"statut": "actif"})
+        total_poulets = animals_collection.count_documents({"type": "poulet", "statut": "actif"})
+        total_porcs = animals_collection.count_documents({"type": "porc", "statut": "actif"})
         
-        # Stats par sexe
-        males = animals_collection.count_documents({"sexe": "M"})
-        females = animals_collection.count_documents({"sexe": "F"})
+        # Stats par sexe (only active)
+        males = animals_collection.count_documents({"sexe": "M", "statut": "actif"})
+        females = animals_collection.count_documents({"sexe": "F", "statut": "actif"})
+        
+        # Additional stats for sold animals
+        total_vendus = animals_collection.count_documents({"statut": "vendu"})
         
         return {
             "total_animals": total_animals,
             "total_poulets": total_poulets,
             "total_porcs": total_porcs,
             "males": males,
-            "females": females
+            "females": females,
+            "total_vendus": total_vendus
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

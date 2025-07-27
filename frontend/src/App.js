@@ -1128,55 +1128,61 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Mobile Header Component compact
+// Mobile Header Component ultra-compact
 const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick, onMedicalClick, onReproductionClick, onHistoryClick }) => {
   return (
-    <header className="professional-header text-white p-2 sticky top-0 z-40 shadow-2xl">
+    <header className="professional-header text-white p-1 sticky top-0 z-40 shadow-2xl">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 gradient-professional-dark rounded-lg flex items-center justify-center shadow-lg border border-gray-600">
-            <span className="text-sm">🐄</span>
+        <div className="flex items-center space-x-1">
+          <div className="w-6 h-6 gradient-professional-dark rounded-md flex items-center justify-center shadow-lg border border-gray-600">
+            <span className="text-xs">🐄</span>
           </div>
           <div>
-            <h1 className="text-sm font-bold text-gradient">Élevage la Providence</h1>
-            <p className="text-xs text-gray-300">Gestion Mobile</p>
+            <h1 className="text-xs font-bold text-gradient">Élevage Providence</h1>
+            <p className="text-xs text-gray-300">Mobile</p>
           </div>
         </div>
-        <div className="flex items-center space-x-1">
-          {/* Boutons compacts */}
+        <div className="flex items-center space-x-0.5">
+          {/* Boutons ultra-compacts avec icônes seules */}
           <button
             onClick={onMedicalClick}
-            className="btn-primary p-1.5 rounded-md text-xs font-medium mobile-button-professional"
+            className="btn-primary p-1 rounded text-xs mobile-button-professional"
+            title="Médical"
           >
             🏥
           </button>
           <button
             onClick={onReproductionClick}
-            className="gradient-professional-purple text-white p-1.5 rounded-md text-xs font-medium mobile-button-professional shadow-lg"
+            className="gradient-professional-purple text-white p-1 rounded text-xs mobile-button-professional shadow-lg"
+            title="Reproduction"
           >
             🐣
           </button>
           <button
             onClick={onHistoryClick}
-            className="btn-secondary p-1.5 rounded-md text-xs font-medium mobile-button-professional"
+            className="btn-secondary p-1 rounded text-xs mobile-button-professional"
+            title="Historique"
           >
             📚
           </button>
           <button
             onClick={onFinancesClick}
-            className="gradient-professional-orange text-white p-1.5 rounded-md text-xs font-medium mobile-button-professional shadow-lg"
+            className="gradient-professional-orange text-white p-1 rounded text-xs mobile-button-professional shadow-lg"
+            title="Finances"
           >
             💰
           </button>
           <button
             onClick={onAddAnimal}
-            className="btn-success p-1.5 rounded-md text-xs font-medium mobile-button-professional"
+            className="btn-success p-1 rounded text-xs mobile-button-professional"
+            title="Ajouter"
           >
             +
           </button>
           <button
             onClick={onMenuToggle}
-            className="p-1.5 text-white bg-gray-700 rounded-md active:bg-gray-600 transition-colors mobile-button-professional border border-gray-600"
+            className="p-1 text-white bg-gray-700 rounded active:bg-gray-600 transition-colors mobile-button-professional border border-gray-600"
+            title="Menu"
           >
             ☰
           </button>

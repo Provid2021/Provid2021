@@ -598,13 +598,19 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <MobileHeader 
-        onAddAnimal={() => alert('Fonctionnalité Ajouter Animal à venir')} 
+        onAddAnimal={openAddModal} 
         onMenuToggle={() => setIsMenuOpen(true)}
       />
       
       <MobileMenu 
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)} 
+      />
+      
+      <AddAnimalModal
+        isOpen={isAddModalOpen}
+        onClose={closeAddModal}
+        onAdd={handleAddAnimal}
       />
       
       {/* Statistics Section */}

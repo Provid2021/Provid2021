@@ -3,6 +3,35 @@ import './App.css';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
 
+// Races prédéfinies par type d'animal
+const RACES_POULET = [
+  'Poule pondeuse',
+  'Sussex',
+  'Rhode Island Red',
+  'Leghorn',
+  'Marans',
+  'Orpington',
+  'Wyandotte',
+  'Plymouth Rock',
+  'Brahma',
+  'Cochin',
+  'Autre'
+];
+
+const RACES_PORC = [
+  'Large White',
+  'Landrace',
+  'Duroc',
+  'Piétrain',
+  'Hampshire',
+  'Yorkshire',
+  'Mangalitsa',
+  'Gloucester Old Spots',
+  'Tamworth',
+  'Berkshire',
+  'Autre'
+];
+
 function App() {
   const [animals, setAnimals] = useState([]);
   const [stats, setStats] = useState({});

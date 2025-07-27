@@ -216,8 +216,9 @@ function App() {
           notes: '',
           date_rappel: ''
         });
-        fetchMedicalRecords(selectedAnimalForMedical.id);
-        fetchUpcomingReminders();
+        // Refresh medical records and reminders
+        await fetchMedicalRecords(selectedAnimalForMedical.id);
+        await fetchUpcomingReminders();
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du dossier médical:', error);

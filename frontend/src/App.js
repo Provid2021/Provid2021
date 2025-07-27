@@ -1202,7 +1202,7 @@ const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   );
 };
 
-// Animal Card Component professionnel sombre
+// Animal Card Component compact pour mobile
 const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproduction, onHistory }) => {
   const animalIcon = animal.type === 'poulet' ? '🐔' : '🐷';
   const sexIcon = animal.sex === 'Mâle' ? '♂️' : '♀️';
@@ -1221,114 +1221,105 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
   const reproStatus = reproductionStatus[animal.reproduction_status] || reproductionStatus.disponible;
   
   return (
-    <div className={`professional-card p-4 mb-4 transform transition-all hover:scale-[1.02] active:scale-[0.98] ${
+    <div className={`professional-card p-2 mb-2 transform transition-all hover:scale-[1.01] active:scale-[0.99] ${
       isActive ? 'border-gray-600' : 'border-gray-700 opacity-75'
     }`}>
-      {/* Header avec info animal */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${
+      {/* Header compact avec info animal */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center space-x-2">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm border ${
             isActive 
               ? 'gradient-professional-green border-green-500' 
               : 'bg-gray-700 border-gray-600'
           }`}>
-            <span className="text-xl">{animalIcon}</span>
+            <span>{animalIcon}</span>
           </div>
-          <div>
-            <h3 className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
+          <div className="flex-1">
+            <h3 className={`font-bold text-sm ${isActive ? 'text-white' : 'text-gray-400'}`}>
               {animal.name}
             </h3>
-            <p className="text-sm text-gray-400">{animal.category}</p>
-            <div className="flex items-center space-x-2 mt-1">
+            <p className="text-xs text-gray-400">{animal.category}</p>
+            <div className="flex items-center space-x-1 mt-0.5">
+              <span className={`text-sm ${sexColor}`}>{sexIcon}</span>
               {!isActive && (
-                <span className="inline-block bg-orange-900 text-orange-300 text-xs px-2 py-1 rounded-full font-medium border border-orange-700">
-                  💰 Vendu
+                <span className="inline-block bg-orange-900 text-orange-300 text-xs px-1 py-0.5 rounded font-medium border border-orange-700">
+                  💰
                 </span>
               )}
               {animal.reproduction_status && animal.reproduction_status !== 'disponible' && (
                 <span className={`text-xs ${reproStatus.color}`}>
-                  {reproStatus.icon} {reproStatus.label}
+                  {reproStatus.icon}
                 </span>
               )}
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className={`text-xl ${sexColor}`}>{sexIcon}</span>
+        
+        {/* Stats compacts inline */}
+        <div className="text-right">
+          <div className="text-xs text-gray-400">
+            <div className={`font-bold text-sm ${isActive ? 'text-white' : 'text-gray-400'}`}>
+              {animal.age}
+            </div>
+            <div className={`font-bold text-sm ${isActive ? 'text-white' : 'text-gray-400'}`}>
+              {animal.weight} kg
+            </div>
+          </div>
         </div>
       </div>
       
-      {/* Grille des stats avec design sombre */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Âge</p>
-          <p className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
-            {animal.age}
-          </p>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-          <p className="text-xs text-gray-400 uppercase tracking-wide">Poids</p>
-          <p className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
-            {animal.weight} kg
-          </p>
-        </div>
-      </div>
-      
-      {/* Boutons d'action professionnels */}
-      <div className="space-y-2">
+      {/* Boutons d'action compacts */}
+      <div className="space-y-1">
         {/* Première ligne : Actions principales */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-1">
           <button
             onClick={() => onEdit(animal)}
-            className="flex-1 py-2 px-3 btn-primary rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
+            className="flex-1 py-1.5 px-2 btn-primary rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center space-x-1"
           >
-            <span>✏️</span>
+            <span className="text-xs">✏️</span>
             <span>Modifier</span>
           </button>
           
           {isActive ? (
             <button
               onClick={() => onSell(animal.id)}
-              className="flex-1 py-2 px-3 btn-warning rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
+              className="flex-1 py-1.5 px-2 btn-warning rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center space-x-1"
             >
-              <span>💰</span>
+              <span className="text-xs">💰</span>
               <span>Vendre</span>
             </button>
           ) : (
             <button
               onClick={() => onDelete(animal.id)}
-              className="flex-1 py-2 px-3 btn-danger rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
+              className="flex-1 py-1.5 px-2 btn-danger rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center space-x-1"
             >
-              <span>🗑️</span>
+              <span className="text-xs">🗑️</span>
               <span>Supprimer</span>
             </button>
           )}
         </div>
         
         {/* Deuxième ligne : Actions spécialisées */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-1">
           <button
             onClick={() => onMedical(animal.id)}
-            className="flex-1 py-2 px-3 btn-success rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
+            className="flex-1 py-1.5 px-2 btn-success rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center"
           >
-            <span>🏥</span>
-            <span>Médical</span>
+            <span className="text-xs">🏥</span>
           </button>
           
           <button
             onClick={() => onReproduction(animal.id)}
-            className="flex-1 py-2 px-3 gradient-professional-purple text-white rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1 border border-purple-600"
+            className="flex-1 py-1.5 px-2 gradient-professional-purple text-white rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center border border-purple-600"
           >
-            <span>🐣</span>
-            <span>Reproduction</span>
+            <span className="text-xs">🐣</span>
           </button>
           
           <button
             onClick={() => onHistory(animal.id)}
-            className="flex-1 py-2 px-3 btn-secondary rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
+            className="flex-1 py-1.5 px-2 btn-secondary rounded-lg text-xs font-medium mobile-button-professional flex items-center justify-center"
           >
-            <span>📚</span>
-            <span>Historique</span>
+            <span className="text-xs">📚</span>
           </button>
         </div>
       </div>

@@ -160,7 +160,10 @@ function App() {
     }
   };
 
-  const calculateAge = (birthDate) => {
+  // Obtenir les races disponibles selon le type d'animal sélectionné
+  const getAvailableRaces = (animalType) => {
+    return animalType === 'poulet' ? RACES_POULET : RACES_PORC;
+  };
     const birth = new Date(birthDate);
     const today = new Date();
     const diffTime = Math.abs(today - birth);

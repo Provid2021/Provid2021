@@ -437,10 +437,17 @@ const Home = () => {
         </div>
         
         {filteredAnimals.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-12 px-4">
             <div className="text-6xl mb-4">🐄</div>
-            <p className="text-gray-500 text-lg">Aucun animal trouvé avec ces filtres</p>
-            <p className="text-gray-400 text-sm mt-2">Essayez de modifier vos critères de recherche</p>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Aucun animal trouvé</h3>
+            <p className="text-gray-500 text-lg mb-4">Aucun animal ne correspond à vos critères de recherche</p>
+            <p className="text-gray-400 text-sm mb-6">Essayez de modifier vos filtres ou d'ajouter de nouveaux animaux</p>
+            <button 
+              onClick={() => alert('Fonctionnalité Ajouter Animal à venir')}
+              className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium active:bg-green-700 transform active:scale-95 transition-all shadow-lg"
+            >
+              ➕ Ajouter un animal
+            </button>
           </div>
         )}
       </div>

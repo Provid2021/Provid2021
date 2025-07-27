@@ -1693,7 +1693,7 @@ const Home = () => {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [medicalReminders, setMedicalReminders] = useState([]);
 
-  // Fetch data
+  // Fetch data avec rappels médicaux
   const fetchAnimals = async () => {
     try {
       const response = await axios.get(`${API}/animals`);
@@ -1709,6 +1709,25 @@ const Home = () => {
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+    }
+  };
+
+  // Fonction pour récupérer les rappels médicaux
+  const fetchMedicalReminders = async () => {
+    try {
+      const response = await axios.get(`${API}/medical`);
+      const today = new Date();
+      const upcoming = response.data.filter(record => {
+        if (record.next_visit_date) {
+          const nextVisit = new Date(record.next_visit_date);
+          const diffDays = Math.ceil((nextVisit - today) / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays <= 7; // Rappels pour les 7 prochains jours
+        }
+        return false;
+      });
+      setMedicalReminders(upcoming);
+    } catch (error) {
+      console.error('Error fetching medical reminders:', error);
     }
   };
 
@@ -1754,19 +1773,45 @@ const Home = () => {
     fetchStats(); // Refresh statistics
   };
 
+  const handleUpdateAnimal = (updatedAnimal) => {
+    setAnimals(prev => 
+      prev.map(animal => 
+        animal.id === updatedAnimal.id ? updatedAnimal : animal
+      )
+    );
+    fetchStats(); // Refresh statistics
+  };
+
   // Modal control functions
   const openAddModal = () => setIsAddModalOpen(true);
   const closeAddModal = () => setIsAddModalOpen(false);
   const openFinancesModal = () => setIsFinancesModalOpen(true);
   const closeFinancesModal = () => setIsFinancesModalOpen(false);
-  const openMedicalModal = () => setIsMedicalModalOpen(true);
+  const openMedicalModal = () => {
+    setIsMedicalModalOpen(true);
+    fetchMedicalReminders(); // Refresh reminders when opening
+  };
   const closeMedicalModal = () => setIsMedicalModalOpen(false);
   const openReproductionModal = () => setIsReproductionModalOpen(true);
   const closeReproductionModal = () => setIsReproductionModalOpen(false);
   const openHistoryModal = () => setIsHistoryModalOpen(true);
   const closeHistoryModal = () => setIsHistoryModalOpen(false);
+  
+  // Edit modal functions
+  const openEditModal = (animal) => {
+    setSelectedAnimal(animal);
+    setIsEditModalOpen(true);
+  };
+  const closeEditModal = () => {
+    setSelectedAnimal(null);
+    setIsEditModalOpen(false);
+  };
 
   // Handlers for animal-specific actions
+  const handleAnimalEdit = (animal) => {
+    openEditModal(animal);
+  };
+
   const handleAnimalMedical = (animalId) => {
     openMedicalModal();
   };

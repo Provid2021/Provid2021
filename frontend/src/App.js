@@ -217,6 +217,26 @@ function App() {
     }
   };
 
+  const fetchFinancialStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/financial-stats`);
+      const data = await response.json();
+      setFinancialStats(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des statistiques financières:', error);
+    }
+  };
+
+  const fetchFinancialRecords = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/financial-records`);
+      const data = await response.json();
+      setFinancialRecords(data.financial_records || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement des transactions financières:', error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

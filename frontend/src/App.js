@@ -182,49 +182,49 @@ const AnimalCard = ({ animal, onEdit, onDelete }) => {
   );
 };
 
-// Filter Component
+// Section de filtres améliorée en français
 const FilterSection = ({ filters, onFilterChange }) => {
   return (
     <div className="bg-white p-4 shadow-sm border-b border-gray-200">
-      <h2 className="text-lg font-semibold mb-4">Filtres et tri</h2>
+      <h2 className="text-lg font-bold mb-4 text-gray-800">🔍 Filtres et tri</h2>
       
       <div className="space-y-4">
-        {/* Status Filter */}
+        {/* Filtre par statut */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Statut des animaux:</p>
+          <p className="text-sm font-semibold text-gray-700 mb-3">Statut des animaux :</p>
           <div className="flex space-x-2">
             <button
               onClick={() => onFilterChange('status', 'actif')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 ${
                 filters.status === 'actif' 
-                  ? 'bg-green-500 text-white' 
+                  ? 'bg-green-500 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              ✅ Actifs
+              ✅ Actifs ({filters.status === 'actif' ? 'sélectionné' : 'tout'})
             </button>
             <button
               onClick={() => onFilterChange('status', 'vendu')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 ${
                 filters.status === 'vendu' 
-                  ? 'bg-orange-500 text-white' 
+                  ? 'bg-orange-500 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              💰 Vendus
+              💰 Vendus (0)
             </button>
           </div>
         </div>
 
-        {/* Type Filter */}
+        {/* Filtre par type d'animal */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Filtrer par type:</p>
-          <div className="flex space-x-2">
+          <p className="text-sm font-semibold text-gray-700 mb-3">Filtrer par type d'animal :</p>
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => onFilterChange('type', 'all')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 ${
                 filters.type === 'all' 
-                  ? 'bg-gray-600 text-white' 
+                  ? 'bg-gray-600 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
@@ -232,9 +232,9 @@ const FilterSection = ({ filters, onFilterChange }) => {
             </button>
             <button
               onClick={() => onFilterChange('type', 'poulet')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 ${
                 filters.type === 'poulet' 
-                  ? 'bg-yellow-500 text-white' 
+                  ? 'bg-yellow-500 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
@@ -242,15 +242,28 @@ const FilterSection = ({ filters, onFilterChange }) => {
             </button>
             <button
               onClick={() => onFilterChange('type', 'porc')}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 ${
                 filters.type === 'porc' 
-                  ? 'bg-pink-500 text-white' 
+                  ? 'bg-pink-500 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
               🐷 Porcs
             </button>
           </div>
+        </div>
+
+        {/* Tri par critères */}
+        <div>
+          <p className="text-sm font-semibold text-gray-700 mb-3">Trier par :</p>
+          <select className="w-full p-3 border border-gray-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <option value="age_asc">Âge (plus jeune d'abord)</option>
+            <option value="age_desc">Âge (plus âgé d'abord)</option>
+            <option value="weight_asc">Poids (plus léger d'abord)</option>
+            <option value="weight_desc">Poids (plus lourd d'abord)</option>
+            <option value="name_asc">Nom (A-Z)</option>
+            <option value="name_desc">Nom (Z-A)</option>
+          </select>
         </div>
       </div>
     </div>

@@ -551,6 +551,10 @@ const Home = () => {
     }
   };
 
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => ({ ...prev, [filterType]: value }));
+  };
+
   const handleAddAnimal = (newAnimal) => {
     setAnimals(prev => [...prev, newAnimal]);
     fetchStats(); // Refresh statistics

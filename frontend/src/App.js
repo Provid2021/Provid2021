@@ -1128,55 +1128,55 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Mobile Header Component with all new features
+// Mobile Header Component avec design professionnel sombre
 const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick, onMedicalClick, onReproductionClick, onHistoryClick }) => {
   return (
-    <header className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 sticky top-0 z-40 shadow-lg">
+    <header className="professional-header text-white p-4 sticky top-0 z-40 shadow-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-12 h-12 gradient-professional-dark rounded-xl flex items-center justify-center shadow-lg border border-gray-600">
             <span className="text-xl">🐄</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold">Élevage la Providence</h1>
-            <p className="text-sm opacity-90">Gestion Complète Mobile</p>
+            <h1 className="text-xl font-bold text-gradient">Élevage la Providence</h1>
+            <p className="text-sm text-gray-300">Gestion Professionnelle Mobile</p>
           </div>
         </div>
         <div className="flex items-center space-x-1">
-          {/* Boutons principaux (visible sur mobile) */}
+          {/* Boutons professionnels avec design sombre */}
           <button
             onClick={onMedicalClick}
-            className="bg-blue-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-blue-700 transform active:scale-95 transition-all shadow-md"
+            className="btn-primary px-2 py-2 rounded-lg text-xs font-medium mobile-button-professional"
           >
             🏥
           </button>
           <button
             onClick={onReproductionClick}
-            className="bg-pink-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-pink-700 transform active:scale-95 transition-all shadow-md"
+            className="gradient-professional-purple text-white px-2 py-2 rounded-lg text-xs font-medium mobile-button-professional shadow-lg"
           >
             🐣
           </button>
           <button
             onClick={onHistoryClick}
-            className="bg-gray-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-gray-700 transform active:scale-95 transition-all shadow-md"
+            className="btn-secondary px-2 py-2 rounded-lg text-xs font-medium mobile-button-professional"
           >
             📚
           </button>
           <button
             onClick={onFinancesClick}
-            className="bg-orange-600 px-2 py-2 rounded-lg text-xs font-medium active:bg-orange-700 transform active:scale-95 transition-all shadow-md"
+            className="gradient-professional-orange text-white px-2 py-2 rounded-lg text-xs font-medium mobile-button-professional shadow-lg"
           >
             💰
           </button>
           <button
             onClick={onAddAnimal}
-            className="bg-green-700 px-2 py-2 rounded-lg text-xs font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
+            className="btn-success px-2 py-2 rounded-lg text-xs font-medium mobile-button-professional"
           >
             + 🐄
           </button>
           <button
             onClick={onMenuToggle}
-            className="p-2 text-white bg-green-700 rounded-lg active:bg-green-800 transition-colors"
+            className="p-2 text-white bg-gray-700 rounded-lg active:bg-gray-600 transition-colors mobile-button-professional border border-gray-600"
           >
             ☰
           </button>

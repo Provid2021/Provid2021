@@ -1202,44 +1202,46 @@ const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   );
 };
 
-// Animal Card Component for Mobile - Avec nouveaux boutons d'action
+// Animal Card Component professionnel sombre
 const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproduction, onHistory }) => {
   const animalIcon = animal.type === 'poulet' ? '🐔' : '🐷';
   const sexIcon = animal.sex === 'Mâle' ? '♂️' : '♀️';
-  const sexColor = animal.sex === 'Mâle' ? 'text-blue-600' : 'text-pink-600';
+  const sexColor = animal.sex === 'Mâle' ? 'text-blue-400' : 'text-pink-400';
   const isActive = animal.status === 'actif';
   
   // Status de reproduction
   const reproductionStatus = {
-    'disponible': { icon: '✅', label: 'Disponible', color: 'text-green-600' },
-    'gestante': { icon: '🤰', label: 'Gestante', color: 'text-pink-600' },
-    'allaitante': { icon: '🍼', label: 'Allaitante', color: 'text-blue-600' },
-    'reproduction': { icon: '💕', label: 'En reproduction', color: 'text-purple-600' },
-    'repos': { icon: '😴', label: 'Au repos', color: 'text-gray-600' }
+    'disponible': { icon: '✅', label: 'Disponible', color: 'text-green-400' },
+    'gestante': { icon: '🤰', label: 'Gestante', color: 'text-pink-400' },
+    'allaitante': { icon: '🍼', label: 'Allaitante', color: 'text-blue-400' },
+    'reproduction': { icon: '💕', label: 'En reproduction', color: 'text-purple-400' },
+    'repos': { icon: '😴', label: 'Au repos', color: 'text-gray-400' }
   };
   
   const reproStatus = reproductionStatus[animal.reproduction_status] || reproductionStatus.disponible;
   
   return (
-    <div className={`rounded-xl p-4 shadow-md border mb-4 transform transition-transform active:scale-[0.98] ${
-      isActive ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-200'
+    <div className={`professional-card p-4 mb-4 transform transition-all hover:scale-[1.02] active:scale-[0.98] ${
+      isActive ? 'border-gray-600' : 'border-gray-700 opacity-75'
     }`}>
       {/* Header avec info animal */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            isActive ? 'bg-gradient-to-br from-green-100 to-green-200' : 'bg-gray-200'
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${
+            isActive 
+              ? 'gradient-professional-green border-green-500' 
+              : 'bg-gray-700 border-gray-600'
           }`}>
             <span className="text-xl">{animalIcon}</span>
           </div>
           <div>
-            <h3 className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+            <h3 className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
               {animal.name}
             </h3>
-            <p className="text-sm text-gray-600">{animal.category}</p>
+            <p className="text-sm text-gray-400">{animal.category}</p>
             <div className="flex items-center space-x-2 mt-1">
               {!isActive && (
-                <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium">
+                <span className="inline-block bg-orange-900 text-orange-300 text-xs px-2 py-1 rounded-full font-medium border border-orange-700">
                   💰 Vendu
                 </span>
               )}
@@ -1256,29 +1258,29 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
         </div>
       </div>
       
-      {/* Grille des stats */}
+      {/* Grille des stats avec design sombre */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Âge</p>
-          <p className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+        <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+          <p className="text-xs text-gray-400 uppercase tracking-wide">Âge</p>
+          <p className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
             {animal.age}
           </p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 uppercase tracking-wide">Poids</p>
-          <p className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+        <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+          <p className="text-xs text-gray-400 uppercase tracking-wide">Poids</p>
+          <p className={`font-bold text-lg ${isActive ? 'text-white' : 'text-gray-400'}`}>
             {animal.weight} kg
           </p>
         </div>
       </div>
       
-      {/* Boutons d'action étendus */}
+      {/* Boutons d'action professionnels */}
       <div className="space-y-2">
         {/* Première ligne : Actions principales */}
         <div className="flex space-x-2">
           <button
             onClick={() => onEdit(animal)}
-            className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-xl text-sm font-medium active:bg-blue-100 transition-colors flex items-center justify-center space-x-1"
+            className="flex-1 py-2 px-3 btn-primary rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
           >
             <span>✏️</span>
             <span>Modifier</span>
@@ -1287,7 +1289,7 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
           {isActive ? (
             <button
               onClick={() => onSell(animal.id)}
-              className="flex-1 py-2 px-3 bg-orange-50 text-orange-600 rounded-xl text-sm font-medium active:bg-orange-100 transition-colors flex items-center justify-center space-x-1"
+              className="flex-1 py-2 px-3 btn-warning rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
             >
               <span>💰</span>
               <span>Vendre</span>
@@ -1295,7 +1297,7 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
           ) : (
             <button
               onClick={() => onDelete(animal.id)}
-              className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-xl text-sm font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-1"
+              className="flex-1 py-2 px-3 btn-danger rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
             >
               <span>🗑️</span>
               <span>Supprimer</span>
@@ -1307,7 +1309,7 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
         <div className="flex space-x-2">
           <button
             onClick={() => onMedical(animal.id)}
-            className="flex-1 py-2 px-3 bg-green-50 text-green-600 rounded-xl text-sm font-medium active:bg-green-100 transition-colors flex items-center justify-center space-x-1"
+            className="flex-1 py-2 px-3 btn-success rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
           >
             <span>🏥</span>
             <span>Médical</span>
@@ -1315,7 +1317,7 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
           
           <button
             onClick={() => onReproduction(animal.id)}
-            className="flex-1 py-2 px-3 bg-pink-50 text-pink-600 rounded-xl text-sm font-medium active:bg-pink-100 transition-colors flex items-center justify-center space-x-1"
+            className="flex-1 py-2 px-3 gradient-professional-purple text-white rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1 border border-purple-600"
           >
             <span>🐣</span>
             <span>Reproduction</span>
@@ -1323,7 +1325,7 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell, onMedical, onReproductio
           
           <button
             onClick={() => onHistory(animal.id)}
-            className="flex-1 py-2 px-3 bg-gray-50 text-gray-600 rounded-xl text-sm font-medium active:bg-gray-100 transition-colors flex items-center justify-center space-x-1"
+            className="flex-1 py-2 px-3 btn-secondary rounded-xl text-sm font-medium mobile-button-professional flex items-center justify-center space-x-1"
           >
             <span>📚</span>
             <span>Historique</span>

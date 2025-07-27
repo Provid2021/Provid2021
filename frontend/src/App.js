@@ -831,6 +831,7 @@ const Home = () => {
       <MobileHeader 
         onAddAnimal={openAddModal} 
         onMenuToggle={() => setIsMenuOpen(true)}
+        onFinancesClick={openFinancesModal}
       />
       
       <MobileMenu 
@@ -842,6 +843,12 @@ const Home = () => {
         isOpen={isAddModalOpen}
         onClose={closeAddModal}
         onAdd={handleAddAnimal}
+      />
+      
+      <FinancesModal
+        isOpen={isFinancesModalOpen}
+        onClose={closeFinancesModal}
+        animals={animals}
       />
       
       {/* Statistics Section */}

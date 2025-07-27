@@ -1704,6 +1704,202 @@ function App() {
         </div>
       )}
 
+      {/* Animal Profile Modal */}
+      {showAnimalProfile && selectedAnimalForProfile && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[90]">
+          <div className="relative top-5 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 shadow-lg rounded-md bg-white max-h-[95vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-400 to-blue-500 flex items-center justify-center mr-4">
+                    <span className="text-white text-3xl">
+                      {selectedAnimalForProfile.type === 'poulet' ? '🐔' : '🐷'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {selectedAnimalForProfile.nom || `${selectedAnimalForProfile.type} #${selectedAnimalForProfile.id.slice(-4)}`}
+                    </h3>
+                    <p className="text-lg text-gray-600 capitalize">{selectedAnimalForProfile.type} - {selectedAnimalForProfile.race}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowAnimalProfile(false);
+                    setSelectedAnimalForProfile(null);
+                    setProfileMedicalRecords([]);
+                    setProfileReproductionEvents([]);
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Informations générales */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                  <h4 className="text-lg font-semibold text-blue-800 mb-4 flex items-center">
+                    📋 Informations générales
+                  </h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Sexe:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        selectedAnimalForProfile.sexe === 'M' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'
+                      }`}>
+                        {selectedAnimalForProfile.sexe === 'M' ? '♂ Mâle' : '♀ Femelle'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Âge:</span>
+                      <span className="font-medium">{calculateAge(selectedAnimalForProfile.date_naissance)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Poids:</span>
+                      <span className="font-medium">{selectedAnimalForProfile.poids} kg</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Né le:</span>
+                      <span className="font-medium">{formatDate(selectedAnimalForProfile.date_naissance)}</span>
+                    </div>
+                    {selectedAnimalForProfile.notes && (
+                      <div className="mt-4 p-3 bg-white rounded-lg">
+                        <span className="text-gray-600 text-sm">Notes:</span>
+                        <p className="text-gray-800 mt-1">{selectedAnimalForProfile.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Historique médical */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200">
+                  <h4 className="text-lg font-semibold text-green-800 mb-4 flex items-center">
+                    🏥 Historique médical ({profileMedicalRecords.length})
+                  </h4>
+                  <div className="max-h-64 overflow-y-auto space-y-3">
+                    {profileMedicalRecords.length === 0 ? (
+                      <p className="text-gray-500 text-sm">Aucun soin enregistré</p>
+                    ) : (
+                      profileMedicalRecords.slice(0, 5).map((record) => (
+                        <div key={record.id} className="bg-white p-3 rounded-lg border border-green-100">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                              {record.type_intervention}
+                            </span>
+                            <span className="text-xs text-gray-500">{formatDate(record.date_intervention)}</span>
+                          </div>
+                          {record.medicament && (
+                            <p className="text-sm text-gray-700">{record.medicament}</p>
+                          )}
+                          {record.date_rappel && (
+                            <p className="text-xs text-amber-600 mt-1">
+                              Rappel: {formatDate(record.date_rappel)}
+                            </p>
+                          )}
+                        </div>
+                      ))
+                    )}
+                    {profileMedicalRecords.length > 5 && (
+                      <p className="text-xs text-gray-500 text-center">
+                        Et {profileMedicalRecords.length - 5} autre(s) soin(s)...
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowAnimalProfile(false);
+                      handleShowMedicalHistory(selectedAnimalForProfile);
+                    }}
+                    className="mt-4 text-sm text-green-600 hover:text-green-800 underline"
+                  >
+                    Voir l'historique complet →
+                  </button>
+                </div>
+
+                {/* Historique reproductif */}
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-xl border border-pink-200">
+                  <h4 className="text-lg font-semibold text-pink-800 mb-4 flex items-center">
+                    🍼 Historique reproductif ({profileReproductionEvents.length})
+                  </h4>
+                  <div className="max-h-64 overflow-y-auto space-y-3">
+                    {profileReproductionEvents.length === 0 ? (
+                      <p className="text-gray-500 text-sm">Aucun événement enregistré</p>
+                    ) : (
+                      profileReproductionEvents.slice(0, 5).map((event) => (
+                        <div key={event.id} className="bg-white p-3 rounded-lg border border-pink-100">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs bg-pink-100 text-pink-800 px-2 py-1 rounded-full">
+                              {getEventTypeLabel(event.type_event)}
+                            </span>
+                            <span className="text-xs text-gray-500">{formatDate(event.date_event)}</span>
+                          </div>
+                          {event.date_prevue_mise_bas && (
+                            <p className="text-xs text-green-600">
+                              Mise bas prévue: {formatDate(event.date_prevue_mise_bas)}
+                            </p>
+                          )}
+                          {event.nombre_petits_vivants && (
+                            <p className="text-sm text-gray-700">
+                              {event.nombre_petits_vivants} petit(s) vivant(s)
+                            </p>
+                          )}
+                        </div>
+                      ))
+                    )}
+                    {profileReproductionEvents.length > 5 && (
+                      <p className="text-xs text-gray-500 text-center">
+                        Et {profileReproductionEvents.length - 5} autre(s) événement(s)...
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowAnimalProfile(false);
+                      handleShowReproductionHistory(selectedAnimalForProfile);
+                    }}
+                    className="mt-4 text-sm text-pink-600 hover:text-pink-800 underline"
+                  >
+                    Voir l'historique complet →
+                  </button>
+                </div>
+              </div>
+
+              {/* Actions rapides */}
+              <div className="mt-6 flex justify-center space-x-4">
+                <button
+                  onClick={() => {
+                    setShowAnimalProfile(false);
+                    handleShowMedicalHistory(selectedAnimalForProfile);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                >
+                  🏥 Ajouter un soin
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAnimalProfile(false);
+                    handleShowReproductionHistory(selectedAnimalForProfile);
+                  }}
+                  className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg"
+                >
+                  🍼 Ajouter un événement reproductif
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAnimalProfile(false);
+                    handleEdit(selectedAnimalForProfile);
+                  }}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg"
+                >
+                  ✏️ Modifier les infos
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Reminder Completion Modal */}
       {showReminderModal && selectedReminder && selectedAnimalForMedical && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-[110]">

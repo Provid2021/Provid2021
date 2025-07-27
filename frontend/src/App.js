@@ -432,15 +432,33 @@ function App() {
               <div className="flex-shrink-0">
                 <span className="text-2xl">⚠️</span>
               </div>
-              <div className="ml-3">
+              <div className="ml-3 flex-1">
                 <h3 className="text-lg font-medium text-amber-800">
                   Rappels médicaux à venir ({upcomingReminders.length})
                 </h3>
-                <div className="mt-2 text-sm text-amber-700">
+                <div className="mt-2 text-sm text-amber-700 space-y-2">
                   {upcomingReminders.slice(0, 3).map((reminder, index) => (
-                    <div key={index} className="mb-1">
-                      <strong>{reminder.animal_info?.nom || 'Animal inconnu'}</strong> - 
-                      {reminder.type_intervention} le {formatDate(reminder.date_rappel)}
+                    <div key={index} className="flex justify-between items-center bg-white rounded p-2 border border-amber-200">
+                      <div>
+                        <strong>{reminder.animal_info?.nom || 'Animal inconnu'}</strong> - 
+                        {reminder.type_intervention} le {formatDate(reminder.date_rappel)}
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleMarkReminderDone(reminder.id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
+                          title="Marquer comme effectué"
+                        >
+                          ✓ Fait
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMedicalRecord(reminder.id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
+                          title="Supprimer le rappel"
+                        >
+                          ✗ Supprimer
+                        </button>
+                      </div>
                     </div>
                   ))}
                   {upcomingReminders.length > 3 && (

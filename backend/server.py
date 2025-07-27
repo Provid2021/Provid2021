@@ -153,12 +153,11 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Add your routes to the router instead of directly to app
+# Routes pour les animaux (existantes)
 @api_router.get("/")
 async def root():
     return {"message": "Élevage la Providence API"}
 
-# Animal routes
 @api_router.get("/animals", response_model=List[Animal])
 async def get_animals():
     animals = await db.animals.find().to_list(1000)
@@ -197,7 +196,146 @@ async def delete_animal(animal_id: str):
         raise HTTPException(status_code=404, detail="Animal not found")
     return {"message": "Animal deleted successfully"}
 
-# Statistics routes
+
+# NOUVELLES ROUTES MÉDICALES
+@api_router.get("/medical/{animal_id}", response_model=List[MedicalRecord])
+async def get_animal_medical_records(animal_id: str):
+    records = await db.medical_records.find({"animal_id": animal_id}).sort("date", -1).to_list(100)
+    return [MedicalRecord(**record) for record in records]
+
+@api_router.post("/medical", response_model=MedicalRecord)
+async def create_medical_record(record: MedicalRecordCreate):
+    # Vérifier que l'animal existe
+    animal = await db.animals.find_one({"id": record.animal_id})
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal not found")
+    
+    record_dict = record.dict()
+    medical_record = MedicalRecord(**record_dict)
+    await db.medical_records.insert_one(medical_record.dict())
+    
+    # Ajouter à l'historique
+    history_event = HistoryEvent(
+        animal_id=record.animal_id,
+        event_type=EventType.MEDICAL,
+        title=f"Soins médicaux: {record.type.value}",
+        description=record.description,
+        cost=record.cost,
+        metadata={"medical_type": record.type.value, "veterinarian": record.veterinarian}
+    )
+    await db.history.insert_one(history_event.dict())
+    
+    return medical_record
+
+@api_router.get("/medical", response_model=List[MedicalRecord])
+async def get_all_medical_records():
+    records = await db.medical_records.find().sort("date", -1).to_list(100)
+    return [MedicalRecord(**record) for record in records]
+
+
+# NOUVELLES ROUTES REPRODUCTION
+@api_router.get("/reproduction/{animal_id}", response_model=List[ReproductionRecord])
+async def get_animal_reproduction_records(animal_id: str):
+    records = await db.reproduction_records.find({
+        "$or": [{"female_id": animal_id}, {"male_id": animal_id}]
+    }).sort("breeding_date", -1).to_list(100)
+    return [ReproductionRecord(**record) for record in records]
+
+@api_router.post("/reproduction", response_model=ReproductionRecord)
+async def create_reproduction_record(record: ReproductionRecordCreate):
+    # Vérifier que les animaux existent
+    female = await db.animals.find_one({"id": record.female_id})
+    if not female:
+        raise HTTPException(status_code=404, detail="Female animal not found")
+    
+    if record.male_id:
+        male = await db.animals.find_one({"id": record.male_id})
+        if not male:
+            raise HTTPException(status_code=404, detail="Male animal not found")
+    
+    record_dict = record.dict()
+    reproduction_record = ReproductionRecord(**record_dict)
+    await db.reproduction_records.insert_one(reproduction_record.dict())
+    
+    # Mettre à jour le statut de reproduction de la femelle
+    await db.animals.update_one(
+        {"id": record.female_id}, 
+        {"$set": {"reproduction_status": ReproductionStatus.BREEDING.value}}
+    )
+    
+    # Ajouter à l'historique
+    male_name = male["name"] if record.male_id and male else "Non spécifié"
+    history_event = HistoryEvent(
+        animal_id=record.female_id,
+        event_type=EventType.REPRODUCTION,
+        title="Reproduction planifiée",
+        description=f"Accouplement avec {male_name}",
+        metadata={"male_id": record.male_id, "expected_birth": record.expected_birth_date}
+    )
+    await db.history.insert_one(history_event.dict())
+    
+    return reproduction_record
+
+@api_router.get("/reproduction", response_model=List[ReproductionRecord])
+async def get_all_reproduction_records():
+    records = await db.reproduction_records.find().sort("breeding_date", -1).to_list(100)
+    return [ReproductionRecord(**record) for record in records]
+
+@api_router.put("/reproduction/{record_id}")
+async def update_reproduction_record(record_id: str, offspring_count: int, offspring_ids: List[str]):
+    result = await db.reproduction_records.update_one(
+        {"id": record_id},
+        {
+            "$set": {
+                "actual_birth_date": datetime.utcnow(),
+                "offspring_count": offspring_count,
+                "offspring_ids": offspring_ids
+            }
+        }
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Reproduction record not found")
+    
+    # Mettre à jour le statut de la femelle
+    record = await db.reproduction_records.find_one({"id": record_id})
+    if record:
+        await db.animals.update_one(
+            {"id": record["female_id"]}, 
+            {"$set": {"reproduction_status": ReproductionStatus.LACTATING.value}}
+        )
+        
+        # Ajouter à l'historique
+        history_event = HistoryEvent(
+            animal_id=record["female_id"],
+            event_type=EventType.BIRTH,
+            title="Naissance réussie",
+            description=f"{offspring_count} petit(s) né(s)",
+            metadata={"offspring_count": offspring_count, "offspring_ids": offspring_ids}
+        )
+        await db.history.insert_one(history_event.dict())
+    
+    return {"message": "Birth recorded successfully"}
+
+
+# NOUVELLES ROUTES HISTORIQUE
+@api_router.get("/history/{animal_id}", response_model=List[HistoryEvent])
+async def get_animal_history(animal_id: str):
+    events = await db.history.find({"animal_id": animal_id}).sort("date", -1).to_list(100)
+    return [HistoryEvent(**event) for event in events]
+
+@api_router.get("/history", response_model=List[HistoryEvent])
+async def get_all_history():
+    events = await db.history.find().sort("date", -1).to_list(200)
+    return [HistoryEvent(**event) for event in events]
+
+@api_router.post("/history", response_model=HistoryEvent)
+async def create_history_event(event: HistoryEventCreate):
+    history_event = HistoryEvent(**event.dict())
+    await db.history.insert_one(history_event.dict())
+    return history_event
+
+
+# Routes statistiques (existantes)
 @api_router.get("/stats")
 async def get_statistics():
     animals = await db.animals.find().to_list(1000)
@@ -210,6 +348,11 @@ async def get_statistics():
     males = len([a for a in animals if a.get("sex") == "Mâle" and a.get("status", "actif") == "actif"])
     females = len([a for a in animals if a.get("sex") == "Femelle" and a.get("status", "actif") == "actif"])
     
+    # Nouvelles statistiques
+    pregnant_count = len([a for a in animals if a.get("reproduction_status") == "gestante"])
+    medical_records_count = await db.medical_records.count_documents({})
+    reproduction_records_count = await db.reproduction_records.count_documents({})
+    
     return {
         "total_livestock": total_animals,
         "active_animals": total_animals,
@@ -217,7 +360,10 @@ async def get_statistics():
         "pigs": {"count": pigs, "males": len([a for a in animals if a.get("type") == "porc" and a.get("sex") == "Mâle" and a.get("status", "actif") == "actif"]), "females": len([a for a in animals if a.get("type") == "porc" and a.get("sex") == "Femelle" and a.get("status", "actif") == "actif"])},
         "profitability": "3504444 FCFA",
         "males": males,
-        "females": females
+        "females": females,
+        "pregnant_animals": pregnant_count,
+        "medical_records": medical_records_count,
+        "reproduction_records": reproduction_records_count
     }
 
 # Status check routes (keep existing functionality)

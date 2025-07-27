@@ -366,23 +366,35 @@ const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   );
 };
 
-// Animal Card Component for Mobile - Completely redesigned
-const AnimalCard = ({ animal, onEdit, onDelete }) => {
+// Animal Card Component for Mobile - Avec fonction de vente
+const AnimalCard = ({ animal, onEdit, onDelete, onSell }) => {
   const animalIcon = animal.type === 'poulet' ? '🐔' : '🐷';
   const sexIcon = animal.sex === 'Mâle' ? '♂️' : '♀️';
   const sexColor = animal.sex === 'Mâle' ? 'text-blue-600' : 'text-pink-600';
+  const isActive = animal.status === 'actif';
   
   return (
-    <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100 mb-4 transform transition-transform active:scale-[0.98]">
-      {/* Header with animal info */}
+    <div className={`rounded-xl p-4 shadow-md border mb-4 transform transition-transform active:scale-[0.98] ${
+      isActive ? 'bg-white border-gray-100' : 'bg-gray-50 border-gray-200'
+    }`}>
+      {/* Header avec info animal */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+            isActive ? 'bg-gradient-to-br from-green-100 to-green-200' : 'bg-gray-200'
+          }`}>
             <span className="text-xl">{animalIcon}</span>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">{animal.name}</h3>
+            <h3 className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+              {animal.name}
+            </h3>
             <p className="text-sm text-gray-600">{animal.category}</p>
+            {!isActive && (
+              <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium">
+                💰 Vendu
+              </span>
+            )}
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -390,19 +402,23 @@ const AnimalCard = ({ animal, onEdit, onDelete }) => {
         </div>
       </div>
       
-      {/* Stats Grid */}
+      {/* Grille des stats */}
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Âge</p>
-          <p className="font-bold text-gray-900 text-lg">{animal.age}</p>
+          <p className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+            {animal.age}
+          </p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 uppercase tracking-wide">Poids</p>
-          <p className="font-bold text-gray-900 text-lg">{animal.weight} kg</p>
+          <p className={`font-bold text-lg ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+            {animal.weight} kg
+          </p>
         </div>
       </div>
       
-      {/* Action Buttons */}
+      {/* Boutons d'action */}
       <div className="flex space-x-2">
         <button
           onClick={() => onEdit(animal)}
@@ -411,13 +427,24 @@ const AnimalCard = ({ animal, onEdit, onDelete }) => {
           <span>✏️</span>
           <span>Modifier</span>
         </button>
-        <button
-          onClick={() => onDelete(animal.id)}
-          className="flex-1 py-3 px-4 bg-red-50 text-red-600 rounded-xl font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-2"
-        >
-          <span>🗑️</span>
-          <span>Supprimer</span>
-        </button>
+        
+        {isActive ? (
+          <button
+            onClick={() => onSell(animal.id)}
+            className="flex-1 py-3 px-4 bg-orange-50 text-orange-600 rounded-xl font-medium active:bg-orange-100 transition-colors flex items-center justify-center space-x-2"
+          >
+            <span>💰</span>
+            <span>Vendre</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onDelete(animal.id)}
+            className="flex-1 py-3 px-4 bg-red-50 text-red-600 rounded-xl font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-2"
+          >
+            <span>🗑️</span>
+            <span>Supprimer</span>
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1428,13 +1428,16 @@ function App() {
                         ...formData, 
                         type: e.target.value,
                         race: '', // Reset race when type changes
-                        raceAutre: '' // Reset custom race when type changes
+                        raceAutre: '', // Reset custom race when type changes
+                        sexe: e.target.value === 'porc' ? 'M' : '', // Only set sexe for porcs
+                        nombre_animaux: e.target.value === 'poulet' ? '' : '1',
+                        numero_vague: e.target.value === 'poulet' ? '' : ''
                       })}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
                       required
                     >
-                      <option value="poulet">Poulet</option>
-                      <option value="porc">Porc</option>
+                      <option value="poulet">🐔 Poulet (Vague)</option>
+                      <option value="porc">🐷 Porc (Individuel)</option>
                     </select>
                   </div>
 
@@ -1464,21 +1467,54 @@ function App() {
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Sexe *</label>
-                    <select
-                      value={formData.sexe}
-                      onChange={(e) => setFormData({...formData, sexe: e.target.value})}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
-                      required
-                    >
-                      <option value="M">Mâle</option>
-                      <option value="F">Femelle</option>
-                    </select>
-                  </div>
+                  {/* Champs spécifiques aux poulets (vagues) */}
+                  {formData.type === 'poulet' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Numéro de vague *</label>
+                        <input
+                          type="text"
+                          value={formData.numero_vague}
+                          onChange={(e) => setFormData({...formData, numero_vague: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                          placeholder="Ex: Vague 1, Lot A, etc."
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nombre de volailles *</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.nombre_animaux}
+                          onChange={(e) => setFormData({...formData, nombre_animaux: e.target.value})}
+                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                          placeholder="Ex: 500"
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Champs spécifiques aux porcs (individuels) */}
+                  {formData.type === 'porc' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Sexe *</label>
+                      <select
+                        value={formData.sexe}
+                        onChange={(e) => setFormData({...formData, sexe: e.target.value})}
+                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                        required
+                      >
+                        <option value="M">♂ Mâle</option>
+                        <option value="F">♀ Femelle</option>
+                      </select>
+                    </div>
+                  )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Date de naissance *</label>
+                    <label className="block text-sm font-medium text-gray-700">Date de naissance/arrivée *</label>
                     <input
                       type="date"
                       value={formData.date_naissance}
@@ -1489,25 +1525,54 @@ function App() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Poids (kg) *</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {formData.type === 'poulet' ? 'Poids moyen (kg) *' : 'Poids (kg) *'}
+                    </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.poids}
                       onChange={(e) => setFormData({...formData, poids: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder={formData.type === 'poulet' ? 'Ex: 2.5' : 'Ex: 25'}
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nom (optionnel)</label>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {formData.type === 'poulet' ? 'Nom de la vague (optionnel)' : 'Nom (optionnel)'}
+                    </label>
                     <input
                       type="text"
                       value={formData.nom}
                       onChange={(e) => setFormData({...formData, nom: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder={formData.type === 'poulet' ? 'Ex: Pondeuses de printemps' : 'Ex: Cochon Paul'}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Photo (optionnel)</label>
+                    <input
+                      type="url"
+                      value={formData.photo_url}
+                      onChange={(e) => setFormData({...formData, photo_url: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      placeholder="URL de la photo"
+                    />
+                    {formData.photo_url && (
+                      <div className="mt-2">
+                        <img 
+                          src={formData.photo_url} 
+                          alt="Aperçu" 
+                          className="w-20 h-20 object-cover rounded-lg border"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1518,6 +1583,10 @@ function App() {
                     onChange={(e) => setFormData({...formData, notes: e.target.value})}
                     rows="3"
                     className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                    placeholder={formData.type === 'poulet' ? 
+                      'Informations sur la vague (fournisseur, conditions, etc.)' : 
+                      'Informations particulières sur l\'animal'
+                    }
                   />
                 </div>
 

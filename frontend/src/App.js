@@ -296,19 +296,42 @@ function App() {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filter Buttons */}
         <div className="bg-white rounded-xl shadow-lg mb-8 p-6">
           <div className="flex flex-wrap gap-4 items-center">
             <label className="text-sm font-medium text-gray-700">Filtrer par type:</label>
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="">Tous les animaux</option>
-              <option value="poulet">Poulets uniquement</option>
-              <option value="porc">Porcs uniquement</option>
-            </select>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFilterType('')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  filterType === '' 
+                    ? 'bg-gray-600 text-white shadow-lg' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📊 Tous ({stats.total_animals || 0})
+              </button>
+              <button
+                onClick={() => setFilterType('poulet')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  filterType === 'poulet' 
+                    ? 'bg-yellow-500 text-white shadow-lg' 
+                    : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                }`}
+              >
+                🐔 Poulets ({stats.total_poulets || 0})
+              </button>
+              <button
+                onClick={() => setFilterType('porc')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                  filterType === 'porc' 
+                    ? 'bg-pink-500 text-white shadow-lg' 
+                    : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                }`}
+              >
+                🐷 Porcs ({stats.total_porcs || 0})
+              </button>
+            </div>
           </div>
         </div>
 

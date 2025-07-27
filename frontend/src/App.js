@@ -83,47 +83,58 @@ const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   );
 };
 
-// Animal Card Component for Mobile
+// Animal Card Component for Mobile - Completely redesigned
 const AnimalCard = ({ animal, onEdit, onDelete }) => {
+  const animalIcon = animal.type === 'poulet' ? '🐔' : '🐷';
+  const sexIcon = animal.sex === 'Mâle' ? '♂️' : '♀️';
+  const sexColor = animal.sex === 'Mâle' ? 'text-blue-600' : 'text-pink-600';
+  
   return (
-    <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200 mb-3">
-      <div className="flex items-center space-x-3 mb-3">
-        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-          <span className="text-lg">{animal.type === 'poulet' ? '🐔' : '🐷'}</span>
+    <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100 mb-4 transform transition-transform active:scale-[0.98]">
+      {/* Header with animal info */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+            <span className="text-xl">{animalIcon}</span>
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">{animal.name}</h3>
+            <p className="text-sm text-gray-600">{animal.category}</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{animal.name}</h3>
-          <p className="text-sm text-gray-600">{animal.category}</p>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => onEdit(animal)}
-            className="p-2 text-blue-600 bg-blue-50 rounded-lg active:bg-blue-100 transition-colors"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={() => onDelete(animal.id)}
-            className="p-2 text-red-600 bg-red-50 rounded-lg active:bg-red-100 transition-colors"
-          >
-            🗑️
-          </button>
+        <div className="flex items-center space-x-2">
+          <span className={`text-xl ${sexColor}`}>{sexIcon}</span>
         </div>
       </div>
       
-      <div className="grid grid-cols-3 gap-4 text-sm">
-        <div>
-          <p className="text-gray-500">Sexe</p>
-          <p className="font-medium text-gray-900">{animal.sex}</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">Âge</p>
+          <p className="font-bold text-gray-900 text-lg">{animal.age}</p>
         </div>
-        <div>
-          <p className="text-gray-500">Âge</p>
-          <p className="font-medium text-gray-900">{animal.age}</p>
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-500 uppercase tracking-wide">Poids</p>
+          <p className="font-bold text-gray-900 text-lg">{animal.weight} kg</p>
         </div>
-        <div>
-          <p className="text-gray-500">Poids</p>
-          <p className="font-medium text-gray-900">{animal.weight} kg</p>
-        </div>
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="flex space-x-2">
+        <button
+          onClick={() => onEdit(animal)}
+          className="flex-1 py-3 px-4 bg-blue-50 text-blue-600 rounded-xl font-medium active:bg-blue-100 transition-colors flex items-center justify-center space-x-2"
+        >
+          <span>✏️</span>
+          <span>Modifier</span>
+        </button>
+        <button
+          onClick={() => onDelete(animal.id)}
+          className="flex-1 py-3 px-4 bg-red-50 text-red-600 rounded-xl font-medium active:bg-red-100 transition-colors flex items-center justify-center space-x-2"
+        >
+          <span>🗑️</span>
+          <span>Supprimer</span>
+        </button>
       </div>
     </div>
   );

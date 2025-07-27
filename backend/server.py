@@ -261,17 +261,33 @@ async def delete_animal(animal_id: str):
 @app.get("/api/stats")
 async def get_stats():
     try:
-        # Only count active animals
-        total_animals = animals_collection.count_documents({"statut": "actif"})
-        total_poulets = animals_collection.count_documents({"type": "poulet", "statut": "actif"})
-        total_porcs = animals_collection.count_documents({"type": "porc", "statut": "actif"})
+        # Count active animals with proper handling of vagues
+        poulets_data = list(animals_collection.find({"type": "poulet", "statut": "actif"}, {"nombre_animaux": 1}))
+        porcs_data = list(animals_collection.find({"type": "porc", "statut": "actif"}, {"sexe": 1}))
         
-        # Stats par sexe (only active)
-        males = animals_collection.count_documents({"sexe": "M", "statut": "actif"})
-        females = animals_collection.count_documents({"sexe": "F", "statut": "actif"})
+        # Calculate total poulets (sum of nombre_animaux in all active waves)
+        total_poulets = sum(poulet.get("nombre_animaux", 1) for poulet in poulets_data)
         
-        # Additional stats for sold animals
-        total_vendus = animals_collection.count_documents({"statut": "vendu"})
+        # Count porcs normally
+        total_porcs = len(porcs_data)
+        
+        # Total animals
+        total_animals = total_poulets + total_porcs
+        
+        # Stats par sexe (only for porcs)
+        males = len([porc for porc in porcs_data if porc.get("sexe") == "M"])
+        females = len([porc for porc in porcs_data if porc.get("sexe") == "F"])
+        
+        # Count sold animals
+        poulets_vendus = list(animals_collection.find({"type": "poulet", "statut": "vendu"}, {"nombre_animaux": 1}))
+        porcs_vendus = animals_collection.count_documents({"type": "porc", "statut": "vendu"})
+        
+        total_poulets_vendus = sum(poulet.get("nombre_animaux", 1) for poulet in poulets_vendus)
+        total_vendus = total_poulets_vendus + porcs_vendus
+        
+        # Count waves/lots
+        total_vagues = len(poulets_data)  # Number of active waves
+        total_lots_porcs = len(porcs_data)  # Number of individual porcs
         
         return {
             "total_animals": total_animals,
@@ -279,7 +295,9 @@ async def get_stats():
             "total_porcs": total_porcs,
             "males": males,
             "females": females,
-            "total_vendus": total_vendus
+            "total_vendus": total_vendus,
+            "total_vagues": total_vagues,
+            "total_lots_porcs": total_lots_porcs
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")

@@ -811,6 +811,256 @@ const FinancesModal = ({ isOpen, onClose, animals }) => {
   );
 };
 
+// Modal de modification d'animal
+const EditAnimalModal = ({ isOpen, onClose, animal, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    sex: 'Mâle',
+    age: '',
+    weight: '',
+    type: 'poulet'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pré-remplir le formulaire quand l'animal change
+  useEffect(() => {
+    if (animal) {
+      setFormData({
+        name: animal.name || '',
+        category: animal.category || '',
+        sex: animal.sex || 'Mâle',
+        age: animal.age || '',
+        weight: animal.weight?.toString() || '',
+        type: animal.type || 'poulet'
+      });
+    }
+  }, [animal]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!animal) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      const updateData = {
+        ...formData,
+        weight: parseFloat(formData.weight)
+      };
+      
+      const response = await axios.put(`${API}/animals/${animal.id}`, updateData);
+      
+      if (response.status === 200) {
+        onUpdate(response.data);
+        onClose();
+        alert('✅ Animal modifié avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la modification:', error);
+      alert('❌ Erreur lors de la modification de l\'animal');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (!isOpen || !animal) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="professional-modal rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="professional-modal-header text-white p-3 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold">✏️ Modifier {animal.name}</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-600 rounded-lg transition-colors"
+              disabled={isSubmitting}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Formulaire de modification */}
+        <form onSubmit={handleSubmit} className="p-4 space-y-3">
+          {/* Nom de l'animal */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Nom de l'animal *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-800 text-white text-sm"
+              required
+            />
+          </div>
+
+          {/* Type d'animal */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Type d'animal *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('type', 'poulet')}
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
+                  formData.type === 'poulet'
+                    ? 'gradient-professional-orange text-white'
+                    : 'btn-secondary'
+                }`}
+              >
+                🐔 Poulet
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('type', 'porc')}
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
+                  formData.type === 'porc'
+                    ? 'gradient-professional-red text-white'
+                    : 'btn-secondary'
+                }`}
+              >
+                🐷 Porc
+              </button>
+            </div>
+          </div>
+
+          {/* Catégorie/Race */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Race/Catégorie *
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-800 text-white text-sm"
+              required
+            >
+              <option value="">Sélectionner une race...</option>
+              {formData.type === 'poulet' ? (
+                <>
+                  <option value="Plymouth Rock">Plymouth Rock</option>
+                  <option value="Sussex">Sussex</option>
+                  <option value="Rhode Island Red">Rhode Island Red</option>
+                  <option value="Leghorn">Leghorn</option>
+                  <option value="Test Category">Test Category</option>
+                </>
+              ) : (
+                <>
+                  <option value="Large White">Large White</option>
+                  <option value="Landrace">Landrace</option>
+                  <option value="Duroc">Duroc</option>
+                  <option value="Yorkshire">Yorkshire</option>
+                </>
+              )}
+            </select>
+          </div>
+
+          {/* Sexe */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Sexe *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('sex', 'Mâle')}
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
+                  formData.sex === 'Mâle'
+                    ? 'gradient-professional-blue text-white'
+                    : 'btn-secondary'
+                }`}
+              >
+                ♂️ Mâle
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('sex', 'Femelle')}
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
+                  formData.sex === 'Femelle'
+                    ? 'gradient-professional-purple text-white'
+                    : 'btn-secondary'
+                }`}
+              >
+                ♀️ Femelle
+              </button>
+            </div>
+          </div>
+
+          {/* Âge et Poids sur la même ligne */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Âge *
+              </label>
+              <input
+                type="text"
+                value={formData.age}
+                onChange={(e) => handleChange('age', e.target.value)}
+                placeholder="Ex: 30 jours"
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-800 text-white text-sm"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-xs font-semibold text-gray-300 mb-1">
+                Poids (kg) *
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.weight}
+                onChange={(e) => handleChange('weight', e.target.value)}
+                placeholder="1.5"
+                className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-800 text-white text-sm"
+                required
+              />
+            </div>
+          </div>
+
+          {/* Boutons d'action */}
+          <div className="flex space-x-2 pt-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 py-2 px-3 btn-secondary rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 py-2 px-3 btn-success rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center text-sm"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Modification...
+                </>
+              ) : (
+                <>
+                  ✅ Sauvegarder
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Formulaire d'ajout d'animal mobile
 const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({

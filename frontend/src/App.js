@@ -566,14 +566,35 @@ const Home = () => {
     }
   };
 
+  const sellAnimal = async (animalId) => {
+    if (window.confirm('🐄 Êtes-vous sûr de vouloir vendre cet animal ?')) {
+      try {
+        const response = await axios.put(`${API}/animals/${animalId}`, {
+          status: 'vendu'
+        });
+        
+        if (response.status === 200) {
+          fetchAnimals(); // Refresh animals list
+          fetchStats(); // Refresh statistics
+          alert('💰 Animal vendu avec succès !');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vente:', error);
+        alert('❌ Erreur lors de la vente de l\'animal');
+      }
+    }
+  };
+
   const deleteAnimal = async (animalId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cet animal ?')) {
+    if (window.confirm('🗑️ Êtes-vous sûr de vouloir supprimer définitivement cet animal ?')) {
       try {
         await axios.delete(`${API}/animals/${animalId}`);
         fetchAnimals();
         fetchStats();
+        alert('✅ Animal supprimé définitivement');
       } catch (error) {
         console.error('Error deleting animal:', error);
+        alert('❌ Erreur lors de la suppression');
       }
     }
   };

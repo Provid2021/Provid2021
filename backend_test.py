@@ -129,6 +129,42 @@ class LivestockAPITester:
         """Test stats after adding animals"""
         return self.run_test("Updated Stats", "GET", "api/stats", 200)
 
+    # Medical Records Tests
+    def test_create_medical_record(self, animal_id):
+        """Test creating a medical record"""
+        medical_data = {
+            "animal_id": animal_id,
+            "date_intervention": "2024-02-15",
+            "type_intervention": "Vaccination",
+            "medicament": "Vaccin Newcastle",
+            "veterinaire": "Dr. Martin",
+            "cout": 25.50,
+            "notes": "Vaccination annuelle obligatoire",
+            "date_rappel": "2024-08-15"
+        }
+        return self.run_test("Create Medical Record", "POST", "api/medical-records", 200, medical_data)
+
+    def test_get_medical_records(self, animal_id):
+        """Test getting medical records for an animal"""
+        return self.run_test("Get Medical Records", "GET", f"api/medical-records/{animal_id}", 200)
+
+    def test_get_upcoming_reminders(self):
+        """Test getting upcoming medical reminders"""
+        return self.run_test("Get Upcoming Reminders", "GET", "api/medical-records/reminders/upcoming", 200)
+
+    def test_create_medical_record_invalid_animal(self):
+        """Test creating medical record for non-existent animal"""
+        medical_data = {
+            "animal_id": "invalid-animal-id",
+            "date_intervention": "2024-02-15",
+            "type_intervention": "Vaccination",
+            "medicament": "Test Vaccine",
+            "veterinaire": "Dr. Test",
+            "cout": 25.50,
+            "notes": "Test record"
+        }
+        return self.run_test("Create Medical Record - Invalid Animal", "POST", "api/medical-records", 404, medical_data)
+
     def cleanup_created_animals(self):
         """Clean up any remaining test animals"""
         print(f"\n🧹 Cleaning up {len(self.created_animals)} remaining test animals...")

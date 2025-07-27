@@ -34,26 +34,34 @@ const MobileMenu = ({ isOpen, onClose }) => {
   );
 };
 
-// Mobile Header Component
-const MobileHeader = ({ onAddAnimal }) => {
+// Mobile Header Component with Hamburger
+const MobileHeader = ({ onAddAnimal, onMenuToggle }) => {
   return (
-    <header className="bg-green-500 text-white p-4 sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 sticky top-0 z-40 shadow-lg">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-            <span className="text-lg">🐄</span>
+          <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center shadow-md">
+            <span className="text-xl">🐄</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold">Élevage la Providence</h1>
-            <p className="text-xs opacity-90">Élevage Naturel & Responsable</p>
+            <h1 className="text-xl font-bold">Élevage la Providence</h1>
+            <p className="text-sm opacity-90">Mobile - Gestion d'élevage</p>
           </div>
         </div>
-        <button
-          onClick={onAddAnimal}
-          className="bg-green-600 px-3 py-2 rounded-lg text-sm font-medium active:bg-green-700 transform active:scale-95 transition-all"
-        >
-          + Animal
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={onAddAnimal}
+            className="bg-green-700 px-4 py-2 rounded-lg text-sm font-medium active:bg-green-800 transform active:scale-95 transition-all shadow-md"
+          >
+            + Animal
+          </button>
+          <button
+            onClick={onMenuToggle}
+            className="p-2 text-white bg-green-700 rounded-lg active:bg-green-800 transition-colors"
+          >
+            ☰
+          </button>
+        </div>
       </div>
     </header>
   );

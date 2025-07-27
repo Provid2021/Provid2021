@@ -158,6 +158,7 @@ async def create_animal(animal: Animal):
     try:
         animal_dict = animal.dict()
         animal_dict["id"] = str(uuid.uuid4())
+        animal_dict["statut"] = "actif"  # Set default status
         animal_dict["created_at"] = datetime.now().isoformat()
         animal_dict["updated_at"] = datetime.now().isoformat()
         

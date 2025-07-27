@@ -1835,6 +1835,7 @@ const Home = () => {
     const loadData = async () => {
       setLoading(true);
       await Promise.all([fetchAnimals(), fetchStats()]);
+      fetchMedicalReminders(); // Charger les rappels aussi
       setLoading(false);
     };
     loadData();

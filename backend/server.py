@@ -221,6 +221,85 @@ async def delete_animal(animal_id: str):
     return {"message": "Animal deleted successfully"}
 
 
+# NOUVELLES ROUTES POUR LES VENTES
+@api_router.get("/sales", response_model=List[SaleRecord])
+async def get_all_sales():
+    sales = await db.sales.find().sort("sale_date", -1).to_list(100)
+    return [SaleRecord(**sale) for sale in sales]
+
+@api_router.get("/sales/{animal_id}", response_model=List[SaleRecord])
+async def get_animal_sales(animal_id: str):
+    sales = await db.sales.find({"animal_id": animal_id}).sort("sale_date", -1).to_list(100)
+    return [SaleRecord(**sale) for sale in sales]
+
+@api_router.post("/sales", response_model=SaleRecord)
+async def create_sale_record(sale: SaleRecordCreate):
+    # Vérifier que l'animal existe
+    animal = await db.animals.find_one({"id": sale.animal_id})
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal not found")
+    
+    # Créer l'enregistrement de vente
+    sale_dict = sale.dict()
+    if not sale_dict.get('sale_date'):
+        sale_dict['sale_date'] = datetime.utcnow()
+    
+    sale_record = SaleRecord(**sale_dict)
+    await db.sales.insert_one(sale_record.dict())
+    
+    # Mettre à jour le statut de l'animal
+    await db.animals.update_one(
+        {"id": sale.animal_id}, 
+        {"$set": {"status": "vendu"}}
+    )
+    
+    # Ajouter à l'historique
+    history_event = HistoryEvent(
+        animal_id=sale.animal_id,
+        event_type=EventType.SALE,
+        title=f"Vente - {sale.sale_price} FCFA",
+        description=f"Vendu à {sale.buyer_name or 'Acheteur non spécifié'} pour {sale.sale_price} FCFA",
+        cost=sale.sale_price,
+        metadata={
+            "buyer_name": sale.buyer_name,
+            "buyer_contact": sale.buyer_contact,
+            "payment_method": sale.payment_method,
+            "quantity": sale.quantity
+        }
+    )
+    await db.history.insert_one(history_event.dict())
+    
+    return sale_record
+
+@api_router.get("/sales/stats/summary")
+async def get_sales_summary():
+    sales = await db.sales.find().to_list(1000)
+    
+    total_revenue = sum(sale.get('sale_price', 0) for sale in sales)
+    total_animals_sold = len(sales)
+    average_price = total_revenue / total_animals_sold if total_animals_sold > 0 else 0
+    
+    # Ventes par mois
+    monthly_sales = {}
+    for sale in sales:
+        sale_date = sale.get('sale_date')
+        if sale_date:
+            if isinstance(sale_date, str):
+                sale_date = datetime.fromisoformat(sale_date.replace('Z', '+00:00'))
+            month_key = sale_date.strftime('%Y-%m')
+            if month_key not in monthly_sales:
+                monthly_sales[month_key] = {"count": 0, "revenue": 0}
+            monthly_sales[month_key]["count"] += 1
+            monthly_sales[month_key]["revenue"] += sale.get('sale_price', 0)
+    
+    return {
+        "total_revenue": total_revenue,
+        "total_animals_sold": total_animals_sold,
+        "average_price": average_price,
+        "monthly_sales": monthly_sales
+    }
+
+
 # NOUVELLES ROUTES MÉDICALES
 @api_router.get("/medical/{animal_id}", response_model=List[MedicalRecord])
 async def get_animal_medical_records(animal_id: str):

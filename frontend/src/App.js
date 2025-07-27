@@ -61,15 +61,23 @@ function App() {
         `${API_BASE_URL}/api/animals/${selectedAnimal.id}` : 
         `${API_BASE_URL}/api/animals`;
       
+      // Ensure proper data types and clean data
+      const submitData = {
+        type: formData.type,
+        race: formData.race.trim(),
+        sexe: formData.sexe,
+        date_naissance: formData.date_naissance,
+        poids: parseFloat(formData.poids),
+        nom: formData.nom.trim(),
+        notes: formData.notes.trim()
+      };
+      
       const response = await fetch(url, {
         method: method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...formData,
-          poids: parseFloat(formData.poids)
-        }),
+        body: JSON.stringify(submitData),
       });
 
       if (response.ok) {

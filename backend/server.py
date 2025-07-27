@@ -172,11 +172,13 @@ async def create_animal(animal: Animal):
         raise HTTPException(status_code=500, detail=f"Erreur: {str(e)}")
 
 @app.get("/api/animals")
-async def get_animals(type: Optional[str] = None):
+async def get_animals(type: Optional[str] = None, statut: Optional[str] = "actif"):
     try:
         query = {}
         if type:
             query["type"] = type
+        if statut:
+            query["statut"] = statut
         
         animals = list(animals_collection.find(query, {"_id": 0}))
         return {"animals": animals, "total": len(animals)}

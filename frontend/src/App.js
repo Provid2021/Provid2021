@@ -141,7 +141,7 @@ function App() {
     fetchUpcomingReminders();
     fetchUpcomingBirths();
     fetchFinancialStats();
-  }, [filterType, filterCategory, sortBy]);
+  }, [filterType, filterCategory, filterStatus, sortBy]);
 
   const fetchAnimals = async () => {
     setLoading(true);

@@ -2631,6 +2631,31 @@ function App() {
                     </select>
                   </div>
 
+                  {/* Animal selection for sales */}
+                  {financialFormData.type_transaction === 'recette' && financialFormData.categorie === 'vente' && (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Animal vendu *</label>
+                      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        <select
+                          value={financialFormData.animal_id}
+                          onChange={(e) => setFinancialFormData({...financialFormData, animal_id: e.target.value})}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                          required
+                        >
+                          <option value="">-- Sélectionnez l'animal vendu --</option>
+                          {animals.filter(animal => animal.statut === 'actif').map((animal) => (
+                            <option key={animal.id} value={animal.id}>
+                              {animal.nom || `${animal.type} #${animal.id.slice(-4)}`} - {animal.race} - {animal.poids}kg
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-yellow-700 mt-2">
+                          ⚠️ L'animal sélectionné sera automatiquement marqué comme vendu et retiré du cheptel actif
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Date *</label>
                     <input

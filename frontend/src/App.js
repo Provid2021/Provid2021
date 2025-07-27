@@ -6,29 +6,71 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Mobile-optimized hamburger menu
+// Menu mobile optimisé avec navigation française
 const MobileMenu = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
   
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="fixed inset-0 bg-black bg-opacity-50" onClick={onClose}></div>
-      <div className="fixed top-0 right-0 h-full w-64 bg-white shadow-xl transform transition-transform">
-        <div className="p-4 border-b">
+      <div className="fixed top-0 right-0 h-full w-72 bg-white shadow-xl transform transition-transform slide-in-right">
+        <div className="p-4 border-b bg-green-50">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Menu</h2>
-            <button onClick={onClose} className="p-2 text-gray-500">✕</button>
+            <h2 className="text-lg font-semibold text-green-800">Navigation</h2>
+            <button 
+              onClick={onClose} 
+              className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Fermer le menu"
+            >
+              ✕
+            </button>
           </div>
         </div>
         <nav className="p-4">
-          <ul className="space-y-4">
-            <li><a href="#" className="block py-2 text-gray-700">🏠 Dashboard</a></li>
-            <li><a href="#" className="block py-2 text-gray-700">🐄 Animaux</a></li>
-            <li><a href="#" className="block py-2 text-gray-700">💰 Finances</a></li>
-            <li><a href="#" className="block py-2 text-gray-700">📊 Rapports</a></li>
-            <li><a href="#" className="block py-2 text-gray-700">⚙️ Paramètres</a></li>
+          <ul className="space-y-2">
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">🏠</span>
+                <span className="font-medium">Tableau de bord</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">🐄</span>
+                <span className="font-medium">Gestion des animaux</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">💰</span>
+                <span className="font-medium">Finances</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">📊</span>
+                <span className="font-medium">Rapports</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">⚙️</span>
+                <span className="font-medium">Paramètres</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" className="flex items-center py-3 px-4 text-gray-700 hover:bg-green-50 rounded-lg transition-colors">
+                <span className="text-xl mr-3">📱</span>
+                <span className="font-medium">Version mobile</span>
+              </a>
+            </li>
           </ul>
         </nav>
+        <div className="absolute bottom-4 left-4 right-4 p-4 bg-gray-50 rounded-lg">
+          <p className="text-sm text-gray-600 text-center">
+            🌱 Élevage naturel & responsable
+          </p>
+        </div>
       </div>
     </div>
   );

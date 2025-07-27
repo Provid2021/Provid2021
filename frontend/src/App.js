@@ -680,11 +680,14 @@ function App() {
       type: animal.type,
       race: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? animal.race : 'Autre',
       raceAutre: RACES_POULET.includes(animal.race) || RACES_PORC.includes(animal.race) ? '' : animal.race,
-      sexe: animal.sexe,
+      sexe: animal.sexe || (animal.type === 'porc' ? 'M' : ''),
       date_naissance: animal.date_naissance,
       poids: animal.poids.toString(),
       nom: animal.nom || '',
-      notes: animal.notes || ''
+      notes: animal.notes || '',
+      nombre_animaux: animal.nombre_animaux ? animal.nombre_animaux.toString() : '1',
+      numero_vague: animal.numero_vague || '',
+      photo_url: animal.photo_url || ''
     });
     setShowAddForm(true);
   };

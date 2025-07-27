@@ -669,6 +669,97 @@ function App() {
     }
   };
 
+  const getAgeInDays = (birthDate) => {
+    const birth = new Date(birthDate);
+    const today = new Date();
+    const diffTime = Math.abs(today - birth);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const getAnimalCategory = (animal) => {
+    const ageInDays = getAgeInDays(animal.date_naissance);
+    
+    if (animal.type === 'porc') {
+      if (ageInDays <= 60) { // 0-2 mois
+        return 'porcelet';
+      } else if (ageInDays <= 180) { // 2-6 mois
+        return 'en_croissance';
+      } else { // 6+ mois
+        return animal.sexe === 'M' ? 'male_reproducteur' : 'femelle_reproductrice';
+      }
+    } else if (animal.type === 'poulet') {
+      if (ageInDays <= 90) { // 0-3 mois
+        return 'poussin';
+      } else { // 3+ mois
+        return animal.sexe === 'M' ? 'coq_reproducteur' : 'poule_pondeuse';
+      }
+    }
+    
+    return 'autre';
+  };
+
+  const getCategoryLabel = (category) => {
+    const labels = {
+      'porcelet': 'Porcelets (0-2 mois)',
+      'en_croissance': 'En croissance (2-6 mois)',
+      'male_reproducteur': 'Mâles reproducteurs (6+ mois)',
+      'femelle_reproductrice': 'Femelles reproductrices (6+ mois)',
+      'poussin': 'Poussins (0-3 mois)',
+      'coq_reproducteur': 'Coqs reproducteurs (3+ mois)',
+      'poule_pondeuse': 'Poules pondeuses (3+ mois)',
+      'autre': 'Autre'
+    };
+    return labels[category] || category;
+  };
+
+  const getFilteredAndSortedAnimals = () => {
+    let filtered = animals;
+    
+    // Filter by type (poulet/porc)
+    if (filterType) {
+      filtered = filtered.filter(animal => animal.type === filterType);
+    }
+    
+    // Filter by category
+    if (filterCategory) {
+      filtered = filtered.filter(animal => getAnimalCategory(animal) === filterCategory);
+    }
+    
+    // Sort animals
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'age':
+          return getAgeInDays(a.date_naissance) - getAgeInDays(b.date_naissance);
+        case 'age_desc':
+          return getAgeInDays(b.date_naissance) - getAgeInDays(a.date_naissance);
+        case 'weight':
+          return a.poids - b.poids;
+        case 'weight_desc':
+          return b.poids - a.poids;
+        case 'name':
+          const nameA = a.nom || `${a.type} #${a.id.slice(-4)}`;
+          const nameB = b.nom || `${b.type} #${b.id.slice(-4)}`;
+          return nameA.localeCompare(nameB);
+        default:
+          return 0;
+      }
+    });
+    
+    return filtered;
+  };
+
+  const getAvailableCategories = () => {
+    if (!filterType) return [];
+    
+    const categoriesForType = animals
+      .filter(animal => animal.type === filterType)
+      .map(animal => getAnimalCategory(animal))
+      .filter((category, index, self) => self.indexOf(category) === index)
+      .sort();
+      
+    return categoriesForType;
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR');

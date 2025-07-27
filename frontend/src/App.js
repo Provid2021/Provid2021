@@ -490,26 +490,26 @@ function App() {
                 </h3>
                 <div className="mt-2 text-sm text-amber-700 space-y-2">
                   {upcomingReminders.slice(0, 3).map((reminder, index) => (
-                    <div key={index} className="flex justify-between items-center bg-white rounded p-2 border border-amber-200">
-                      <div>
-                        <strong>{reminder.animal_info?.nom || 'Animal inconnu'}</strong> - 
-                        {reminder.type_intervention} le {formatDate(reminder.date_rappel)}
+                    <div 
+                      key={index} 
+                      className="flex justify-between items-center bg-white rounded p-3 border border-amber-200 hover:bg-amber-50 cursor-pointer transition-colors"
+                      onClick={() => handleClickReminder(reminder)}
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          <strong>{reminder.animal_info?.nom || 'Animal inconnu'}</strong> - {reminder.type_intervention}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Programmé pour le {formatDate(reminder.date_rappel)}
+                        </div>
+                        {reminder.notes && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Note: {reminder.notes}
+                          </div>
+                        )}
                       </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleMarkReminderDone(reminder.id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs"
-                          title="Marquer comme effectué"
-                        >
-                          ✓ Fait
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMedicalRecord(reminder.id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs"
-                          title="Supprimer le rappel"
-                        >
-                          ✗ Supprimer
-                        </button>
+                      <div className="text-amber-600">
+                        👆 Cliquer pour effectuer
                       </div>
                     </div>
                   ))}

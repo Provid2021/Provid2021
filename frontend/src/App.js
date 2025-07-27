@@ -1875,6 +1875,13 @@ const Home = () => {
         onAdd={handleAddAnimal}
       />
       
+      <EditAnimalModal
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        animal={selectedAnimal}
+        onUpdate={handleUpdateAnimal}
+      />
+      
       <FinancesModal
         isOpen={isFinancesModalOpen}
         onClose={closeFinancesModal}
@@ -1898,6 +1905,41 @@ const Home = () => {
         onClose={closeHistoryModal}
         animals={animals}
       />
+      
+      {/* Rappels médicaux */}
+      {medicalReminders.length > 0 && (
+        <div className="mx-2 mb-2">
+          <div className="professional-card p-2 border-orange-500">
+            <h3 className="text-sm font-bold text-orange-400 mb-2">🔔 Rappels Soins</h3>
+            <div className="space-y-1">
+              {medicalReminders.slice(0, 3).map((reminder) => {
+                const animal = animals.find(a => a.id === reminder.animal_id);
+                const daysUntil = Math.ceil((new Date(reminder.next_visit_date) - new Date()) / (1000 * 60 * 60 * 24));
+                
+                return (
+                  <div key={reminder.id} className="bg-orange-900 bg-opacity-30 p-2 rounded border border-orange-600">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-semibold text-orange-300">
+                          {animal ? `🐔 ${animal.name}` : 'Animal inconnu'}
+                        </p>
+                        <p className="text-xs text-orange-400">{reminder.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-orange-200">
+                          {daysUntil === 0 ? 'Aujourd\'hui' : 
+                           daysUntil === 1 ? 'Demain' : 
+                           `Dans ${daysUntil}j`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Statistics Section compact */}
       <div className="p-2 space-y-2">

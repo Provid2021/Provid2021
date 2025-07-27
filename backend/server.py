@@ -104,6 +104,30 @@ class MedicalRecordCreate(BaseModel):
     notes: Optional[str] = None
 
 
+# Nouveaux modèles pour les ventes détaillées
+class SaleRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    animal_id: str
+    sale_price: float
+    quantity: int = 1
+    buyer_name: Optional[str] = None
+    buyer_contact: Optional[str] = None
+    sale_date: datetime = Field(default_factory=datetime.utcnow)
+    payment_method: Optional[str] = "cash"  # cash, bank_transfer, check
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SaleRecordCreate(BaseModel):
+    animal_id: str
+    sale_price: float
+    quantity: int = 1
+    buyer_name: Optional[str] = None
+    buyer_contact: Optional[str] = None
+    sale_date: Optional[datetime] = None
+    payment_method: Optional[str] = "cash"
+    notes: Optional[str] = None
+
+
 # Nouveaux modèles pour la reproduction
 class ReproductionRecord(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))

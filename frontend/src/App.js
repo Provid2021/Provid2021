@@ -812,13 +812,32 @@ function App() {
       )}
 
       {/* Add Medical Record Modal */}
-      {showAddMedicalForm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-60">
+      {showAddMedicalForm && selectedAnimalForMedical && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-[100]">
           <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
             <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Ajouter un soin médical
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Ajouter un soin médical
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAddMedicalForm(false);
+                    setMedicalFormData({
+                      date_intervention: '',
+                      type_intervention: '',
+                      medicament: '',
+                      veterinaire: '',
+                      cout: '',
+                      notes: '',
+                      date_rappel: ''
+                    });
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
               
               <form onSubmit={handleMedicalSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

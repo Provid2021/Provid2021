@@ -731,7 +731,7 @@ function App() {
 
       {/* Medical History Modal */}
       {showMedicalHistory && selectedAnimalForMedical && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[90]">
           <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/4 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
             <div className="mt-3">
               <div className="flex justify-between items-center mb-4">

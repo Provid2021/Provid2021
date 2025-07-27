@@ -183,6 +183,18 @@ function App() {
 
   const handleMedicalSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation des champs requis
+    if (!medicalFormData.date_intervention || !medicalFormData.type_intervention) {
+      alert('Veuillez remplir les champs obligatoires (Date et Type d\'intervention)');
+      return;
+    }
+    
+    if (!selectedAnimalForMedical) {
+      alert('Erreur: Aucun animal sélectionné');
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -190,10 +202,10 @@ function App() {
         animal_id: selectedAnimalForMedical.id,
         date_intervention: medicalFormData.date_intervention,
         type_intervention: medicalFormData.type_intervention,
-        medicament: medicalFormData.medicament.trim(),
-        veterinaire: medicalFormData.veterinaire.trim(),
+        medicament: medicalFormData.medicament ? medicalFormData.medicament.trim() : '',
+        veterinaire: medicalFormData.veterinaire ? medicalFormData.veterinaire.trim() : '',
         cout: medicalFormData.cout ? parseFloat(medicalFormData.cout) : null,
-        notes: medicalFormData.notes.trim(),
+        notes: medicalFormData.notes ? medicalFormData.notes.trim() : '',
         date_rappel: medicalFormData.date_rappel || null
       };
       
@@ -206,6 +218,7 @@ function App() {
       });
 
       if (response.ok) {
+        // Reset form and close modal
         setShowAddMedicalForm(false);
         setMedicalFormData({
           date_intervention: '',
@@ -216,12 +229,19 @@ function App() {
           notes: '',
           date_rappel: ''
         });
+        
         // Refresh medical records and reminders
         await fetchMedicalRecords(selectedAnimalForMedical.id);
         await fetchUpcomingReminders();
+        
+        alert('Soin médical ajouté avec succès !');
+      } else {
+        const errorData = await response.json();
+        alert(`Erreur lors de l'ajout: ${errorData.detail || 'Erreur inconnue'}`);
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du dossier médical:', error);
+      alert('Erreur de connexion. Veuillez réessayer.');
     }
     setLoading(false);
   };

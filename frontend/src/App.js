@@ -321,6 +321,13 @@ function App() {
       return;
     }
     
+    // Validation pour saillie/insémination - un mâle doit être sélectionné
+    if ((reproductionFormData.type_event === 'saillie' || reproductionFormData.type_event === 'insemination') &&
+        !reproductionFormData.male_id && !reproductionFormData.male_info) {
+      alert('Veuillez sélectionner un mâle reproducteur ou saisir les informations d\'un mâle externe');
+      return;
+    }
+    
     if (!selectedAnimalForReproduction) {
       alert('Erreur: Aucun animal sélectionné');
       return;

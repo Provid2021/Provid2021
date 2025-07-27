@@ -57,6 +57,8 @@ function App() {
   const [medicalRecords, setMedicalRecords] = useState([]);
   const [showAddMedicalForm, setShowAddMedicalForm] = useState(false);
   const [upcomingReminders, setUpcomingReminders] = useState([]);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState(null);
 
   const [formData, setFormData] = useState({
     type: 'poulet',

@@ -557,6 +557,16 @@ function App() {
                     onClick={() => {
                       setShowAddForm(false);
                       setSelectedAnimal(null);
+                      setFormData({
+                        type: 'poulet',
+                        race: '',
+                        raceAutre: '',
+                        sexe: 'M',
+                        date_naissance: '',
+                        poids: '',
+                        nom: '',
+                        notes: ''
+                      });
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                   >

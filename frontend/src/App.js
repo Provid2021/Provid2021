@@ -2659,8 +2659,9 @@ function App() {
                         </>
                       ) : (
                         <>
-                          <option value="vente">🐷 Vente d'animaux</option>
-                          <option value="produits">🥚 Vente de produits</option>
+                          <option value="vente_animaux">🐷 Vente d'animaux</option>
+                          <option value="vente_oeufs">🥚 Vente d'œufs</option>
+                          <option value="vente_viande">🥩 Vente de viande</option>
                           <option value="services">🛠️ Services</option>
                           <option value="subventions">🏛️ Subventions</option>
                           <option value="autre">💼 Autre</option>

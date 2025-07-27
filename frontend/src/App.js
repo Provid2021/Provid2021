@@ -951,40 +951,65 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50">
-      {/* Professional Header */}
-      <header className="bg-white shadow-xl border-b border-gray-200 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-blue-600 to-indigo-600 opacity-5"></div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-25 to-lime-50" style={{
+      backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+    }}>
+      {/* Professional Agricultural Header */}
+      <header className="bg-white shadow-2xl border-b-2 border-green-200 relative overflow-hidden">
+        {/* Nature-inspired background pattern */}
+        <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-emerald-500 to-lime-500 opacity-5"></div>
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-500 via-emerald-400 to-lime-400"></div>
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="flex justify-between items-center py-8">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <span className="text-3xl">🏡</span>
+            <div className="flex items-center space-x-6">
+              {/* Farm Logo */}
+              <div className="relative group">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 via-emerald-500 to-lime-500 rounded-3xl flex items-center justify-center shadow-xl transform rotate-3 group-hover:rotate-0 transition-all duration-500 border-4 border-white">
+                  <div className="text-4xl">🌾</div>
                 </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
-                  <span className="text-xs">🐷</span>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                  <span className="text-sm">🐷</span>
+                </div>
+                <div className="absolute -bottom-1 -left-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center shadow-md">
+                  <span className="text-xs">🐔</span>
                 </div>
               </div>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+              
+              <div className="space-y-1">
+                <h1 className="text-5xl font-bold bg-gradient-to-r from-green-700 via-emerald-600 to-lime-600 bg-clip-text text-transparent tracking-tight">
                   Élevage la Providence
                 </h1>
-                <p className="text-lg text-gray-600 font-medium">Système de gestion d'élevage intelligent</p>
-                <p className="text-sm text-gray-500">Solution professionnelle pour l'élevage moderne</p>
+                <div className="flex items-center space-x-3">
+                  <div className="h-1 w-8 bg-gradient-to-r from-green-500 to-emerald-400 rounded-full"></div>
+                  <p className="text-xl text-gray-700 font-semibold">Élevage Naturel & Responsable</p>
+                  <div className="h-1 w-8 bg-gradient-to-r from-emerald-400 to-lime-400 rounded-full"></div>
+                </div>
+                <p className="text-base text-gray-600 font-medium flex items-center space-x-2">
+                  <span className="text-green-500">🌿</span>
+                  <span>Gestion professionnelle • Bien-être animal • Qualité garantie</span>
+                  <span className="text-green-500">🌿</span>
+                </p>
               </div>
             </div>
+            
             <div className="flex space-x-4">
+              {/* Finance Button */}
               <button
                 onClick={() => setShowFinancialDashboard(true)}
-                className="group relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105 border-2 border-amber-200"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="text-xl">💰</span>
-                  <span>Finances</span>
+                <div className="flex items-center space-x-3">
+                  <div className="text-2xl">💰</div>
+                  <div>
+                    <div className="text-lg">Finances</div>
+                    <div className="text-xs opacity-90">Gestion économique</div>
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-400 opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity duration-300"></div>
               </button>
+              
+              {/* Add Animal Button */}
               <button
                 onClick={() => {
                   setShowAddForm(true);
@@ -1003,16 +1028,26 @@ function App() {
                     photo_url: ''
                   });
                 }}
-                className="group relative bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group relative bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-10 py-4 rounded-2xl font-bold transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:scale-105 border-2 border-green-200"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="text-2xl">+</span>
-                  <span>Nouvel Animal</span>
+                <div className="flex items-center space-x-3">
+                  <div className="text-3xl">+</div>
+                  <div>
+                    <div className="text-lg">Nouvel Animal</div>
+                    <div className="text-xs opacity-90">Ajouter au cheptel</div>
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-lime-400 to-green-400 opacity-0 group-hover:opacity-20 rounded-2xl transition-opacity duration-300"></div>
               </button>
             </div>
           </div>
+        </div>
+        
+        {/* Decorative grass border */}
+        <div className="h-3 bg-gradient-to-r from-green-400 via-emerald-400 to-lime-400 relative">
+          <div className="absolute inset-0 opacity-60" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 12h40V0c-5 3-10 5-15 5S10 3 5 0 0 12 0 12z' fill='%23059669' fill-opacity='0.3'/%3E%3C/svg%3E")`
+          }}></div>
         </div>
       </header>
 

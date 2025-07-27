@@ -968,41 +968,90 @@ function App() {
           </div>
         )}
 
-        {/* Filter Buttons */}
+        {/* Advanced Filter System */}
         <div className="bg-white rounded-xl shadow-lg mb-8 p-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <label className="text-sm font-medium text-gray-700">Filtrer par type:</label>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setFilterType('')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                  filterType === '' 
-                    ? 'bg-gray-600 text-white shadow-lg' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtres et tri</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Type Filter */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-3 block">Filtrer par type:</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setFilterType('');
+                    setFilterCategory('');
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    filterType === '' 
+                      ? 'bg-gray-600 text-white shadow-lg' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  📊 Tous ({stats.total_animals || 0})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterType('poulet');
+                    setFilterCategory('');
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    filterType === 'poulet' 
+                      ? 'bg-yellow-500 text-white shadow-lg' 
+                      : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  }`}
+                >
+                  🐔 Poulets ({stats.total_poulets || 0})
+                </button>
+                <button
+                  onClick={() => {
+                    setFilterType('porc');
+                    setFilterCategory('');
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    filterType === 'porc' 
+                      ? 'bg-pink-500 text-white shadow-lg' 
+                      : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
+                  }`}
+                >
+                  🐷 Porcs ({stats.total_porcs || 0})
+                </button>
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            {filterType && (
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">Filtrer par catégorie:</label>
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  <option value="">Toutes les catégories</option>
+                  {getAvailableCategories().map((category) => (
+                    <option key={category} value={category}>
+                      {getCategoryLabel(category)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Sort Options */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-3 block">Trier par:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
-                📊 Tous ({stats.total_animals || 0})
-              </button>
-              <button
-                onClick={() => setFilterType('poulet')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                  filterType === 'poulet' 
-                    ? 'bg-yellow-500 text-white shadow-lg' 
-                    : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                }`}
-              >
-                🐔 Poulets ({stats.total_poulets || 0})
-              </button>
-              <button
-                onClick={() => setFilterType('porc')}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                  filterType === 'porc' 
-                    ? 'bg-pink-500 text-white shadow-lg' 
-                    : 'bg-pink-100 text-pink-700 hover:bg-pink-200'
-                }`}
-              >
-                🐷 Porcs ({stats.total_porcs || 0})
-              </button>
+                <option value="age">Âge (plus jeune d'abord)</option>
+                <option value="age_desc">Âge (plus âgé d'abord)</option>
+                <option value="weight">Poids (plus léger d'abord)</option>
+                <option value="weight_desc">Poids (plus lourd d'abord)</option>
+                <option value="name">Nom (A-Z)</option>
+              </select>
             </div>
           </div>
         </div>

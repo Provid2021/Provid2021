@@ -1594,104 +1594,88 @@ const Home = () => {
         animals={animals}
       />
       
-      {/* Statistics Section avec design professionnel */}
-      <div className="p-4 space-y-4">
+      {/* Statistics Section compact */}
+      <div className="p-2 space-y-2">
         {/* Top Row */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-2">
           <StatCard
             icon="🏠"
             title="Cheptel Total"
             value={stats.total_livestock || 0}
-            subtitle="Animaux actifs dans l'élevage"
+            subtitle="Animaux actifs"
             className="gradient-professional-green"
           />
         </div>
         
         {/* Second Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <StatCard
             icon="🐔"
             title="Volailles"
             value={stats.poultry?.count || 0}
-            subtitle="4 vague(s)"
+            subtitle="4 vagues"
             className="gradient-professional-orange"
           />
           <StatCard
             icon="🐷"
             title="Porcins"
             value={stats.pigs?.count || 0}
-            subtitle="Élevage individuel"
+            subtitle="Individuel"
             className="gradient-professional-red"
           />
         </div>
         
         {/* Third Row */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-4 gap-1">
           <StatCard
             icon="♂️"
-            title="Mâles"
+            title="M"
             value={stats.males || 0}
-            subtitle="Reproducteurs"
             className="gradient-professional-blue"
           />
           <StatCard
             icon="♀️"
-            title="Femelles"
+            title="F"
             value={stats.females || 0}
-            subtitle="Reproductrices"
             className="gradient-professional-purple"
           />
-        </div>
-        
-        {/* New Statistics Row */}
-        <div className="grid grid-cols-3 gap-3">
           <StatCard
             icon="🏥"
             title="Soins"
             value={stats.medical_records || 0}
-            subtitle="Dossiers médicaux"
             className="gradient-professional-blue"
           />
           <StatCard
             icon="🐣"
-            title="Reprod."
+            title="Repro"
             value={stats.reproduction_records || 0}
-            subtitle="Cycles actifs"
             className="gradient-professional-purple"
-          />
-          <StatCard
-            icon="🤰"
-            title="Gestantes"
-            value={stats.pregnant_animals || 0}
-            subtitle="En gestation"
-            className="gradient-professional-red"
           />
         </div>
         
-        {/* Bottom Row */}
-        <div className="grid grid-cols-1 gap-4">
+        {/* Bottom Row - Rentabilité */}
+        <div className="grid grid-cols-1 gap-2">
           <StatCard
             icon="💰"
-            title="Rentabilité Mensuelle"
+            title="Rentabilité"
             value="3,504,444 FCFA"
-            subtitle="Bénéfice net mensuel"
+            subtitle="Bénéfice mensuel"
             className="gradient-professional-green"
           />
         </div>
       </div>
 
-      {/* Filters avec design sombre */}
-      <div className="professional-card mx-4 mb-4 p-4">
-        <h2 className="text-lg font-bold mb-4 text-white">🔍 Filtres et tri</h2>
+      {/* Filters compact */}
+      <div className="professional-card mx-2 mb-2 p-2">
+        <h2 className="text-sm font-bold mb-2 text-white">🔍 Filtres</h2>
         
-        <div className="space-y-4">
-          {/* Filtre par statut avec design sombre */}
+        <div className="space-y-2">
+          {/* Filtre par statut compact */}
           <div>
-            <p className="text-sm font-semibold text-gray-300 mb-3">Statut des animaux :</p>
-            <div className="flex space-x-2">
+            <div className="flex space-x-1">
               <button
                 onClick={() => handleFilterChange('status', 'actif')}
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all mobile-button-professional ${
                   filters.status === 'actif' 
                     ? 'btn-success' 
                     : 'btn-secondary'
@@ -1701,7 +1685,7 @@ const Home = () => {
               </button>
               <button
                 onClick={() => handleFilterChange('status', 'vendu')}
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all mobile-button-professional ${
                   filters.status === 'vendu' 
                     ? 'btn-warning' 
                     : 'btn-secondary'
@@ -1712,54 +1696,53 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Filtre par type d'animal */}
+          {/* Filtre par type compact */}
           <div>
-            <p className="text-sm font-semibold text-gray-300 mb-3">Filtrer par type d'animal :</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               <button
                 onClick={() => handleFilterChange('type', 'all')}
-                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                className={`px-1 py-1.5 rounded-lg text-xs font-medium transition-all mobile-button-professional ${
                   filters.type === 'all' 
                     ? 'btn-secondary border-white' 
                     : 'btn-secondary'
                 }`}
               >
-                🏠 Tous ({animals.length})
+                🏠 Tous
               </button>
               <button
                 onClick={() => handleFilterChange('type', 'poulet')}
-                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                className={`px-1 py-1.5 rounded-lg text-xs font-medium transition-all mobile-button-professional ${
                   filters.type === 'poulet' 
-                    ? 'gradient-professional-orange text-white border-orange-400' 
+                    ? 'gradient-professional-orange text-white' 
                     : 'btn-secondary'
                 }`}
               >
-                🐔 Poulets ({animals.filter(a => a.type === 'poulet').length})
+                🐔 Poulets
               </button>
               <button
                 onClick={() => handleFilterChange('type', 'porc')}
-                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                className={`px-1 py-1.5 rounded-lg text-xs font-medium transition-all mobile-button-professional ${
                   filters.type === 'porc' 
-                    ? 'gradient-professional-red text-white border-pink-400' 
+                    ? 'gradient-professional-red text-white' 
                     : 'btn-secondary'
                 }`}
               >
-                🐷 Porcs ({animals.filter(a => a.type === 'porc').length})
+                🐷 Porcs
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Animals List */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">
-            Liste des Animaux ({filteredAnimals.length})
+      {/* Animals List compact */}
+      <div className="px-2">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-bold text-white">
+            📋 Animaux ({filteredAnimals.length})
           </h2>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           {filteredAnimals.map((animal) => (
             <AnimalCard
               key={animal.id}
@@ -1775,14 +1758,13 @@ const Home = () => {
         </div>
         
         {filteredAnimals.length === 0 && (
-          <div className="text-center py-12 px-4">
-            <div className="text-6xl mb-4">🐄</div>
-            <h3 className="text-xl font-bold text-white mb-2">Aucun animal trouvé</h3>
-            <p className="text-gray-400 text-lg mb-4">Aucun animal ne correspond à vos critères de recherche</p>
-            <p className="text-gray-500 text-sm mb-6">Essayez de modifier vos filtres ou d'ajouter de nouveaux animaux</p>
+          <div className="text-center py-8 px-4">
+            <div className="text-4xl mb-2">🐄</div>
+            <h3 className="text-sm font-bold text-white mb-1">Aucun animal trouvé</h3>
+            <p className="text-gray-400 text-xs mb-3">Modifiez vos filtres</p>
             <button 
               onClick={openAddModal}
-              className="btn-success px-6 py-3 rounded-xl font-medium mobile-button-professional"
+              className="btn-success px-4 py-2 rounded-lg font-medium mobile-button-professional text-xs"
             >
               ➕ Ajouter un animal
             </button>
@@ -1790,18 +1772,18 @@ const Home = () => {
         )}
       </div>
       
-      {/* Bouton d'action flottant professionnel */}
+      {/* Bouton d'action flottant compact */}
       <button
         onClick={openAddModal}
-        className="fixed bottom-6 right-6 w-16 h-16 gradient-professional-green text-white rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-95 transform transition-all lg:hidden hover:shadow-2xl border border-green-500"
+        className="fixed bottom-4 right-4 w-12 h-12 gradient-professional-green text-white rounded-full shadow-2xl flex items-center justify-center text-lg active:scale-95 transform transition-all lg:hidden hover:shadow-2xl border border-green-500"
         aria-label="Ajouter un animal"
       >
-        <span className="text-3xl">+</span>
+        <span className="text-xl">+</span>
       </button>
       
-      {/* Badge version professionnelle */}
-      <div className="fixed bottom-20 right-6 professional-card px-3 py-2 rounded-full shadow-xl border border-gray-600 lg:hidden">
-        <span className="text-xs text-gray-300">📱 Version Pro Mobile</span>
+      {/* Badge version compact */}
+      <div className="fixed bottom-16 right-4 professional-card px-2 py-1 rounded-full shadow-xl border border-gray-600 lg:hidden">
+        <span className="text-xs text-gray-300">📱 Compact</span>
       </div>
     </div>
   );

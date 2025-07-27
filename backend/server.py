@@ -39,6 +39,9 @@ class Animal(BaseModel):
     poids: float
     nom: Optional[str] = None
     notes: Optional[str] = None
+    statut: Optional[str] = "actif"  # "actif", "vendu", "mort", "abattu"
+    date_vente: Optional[str] = None
+    prix_vente: Optional[float] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -49,6 +52,9 @@ class AnimalUpdate(BaseModel):
     poids: Optional[float] = None
     nom: Optional[str] = None
     notes: Optional[str] = None
+    statut: Optional[str] = None
+    date_vente: Optional[str] = None
+    prix_vente: Optional[float] = None
 
 class MedicalRecord(BaseModel):
     id: Optional[str] = None

@@ -466,13 +466,28 @@ function App() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Race *</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.race}
                       onChange={(e) => setFormData({...formData, race: e.target.value})}
                       className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
                       required
-                    />
+                    >
+                      <option value="">Sélectionnez une race</option>
+                      {getAvailableRaces(formData.type).map((race) => (
+                        <option key={race} value={race}>
+                          {race}
+                        </option>
+                      ))}
+                    </select>
+                    {formData.race === 'Autre' && (
+                      <input
+                        type="text"
+                        placeholder="Précisez la race"
+                        value={formData.raceAutre || ''}
+                        onChange={(e) => setFormData({...formData, raceAutre: e.target.value})}
+                        className="mt-2 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-green-500 focus:border-green-500"
+                      />
+                    )}
                   </div>
 
                   <div>

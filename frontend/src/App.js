@@ -518,6 +518,26 @@ function App() {
     fetchBreedingMales(animal.type);
   };
 
+  const handleShowAnimalProfile = async (animal) => {
+    setSelectedAnimalForProfile(animal);
+    setShowAnimalProfile(true);
+    
+    // Fetch all data for this animal
+    try {
+      // Fetch medical records
+      const medicalResponse = await fetch(`${API_BASE_URL}/api/medical-records/${animal.id}`);
+      const medicalData = await medicalResponse.json();
+      setProfileMedicalRecords(medicalData.medical_records || []);
+      
+      // Fetch reproduction events
+      const reproductionResponse = await fetch(`${API_BASE_URL}/api/reproduction-events/${animal.id}`);
+      const reproductionData = await reproductionResponse.json();
+      setProfileReproductionEvents(reproductionData.reproduction_events || []);
+    } catch (error) {
+      console.error('Erreur lors du chargement du profil:', error);
+    }
+  };
+
   const handleDeleteMedicalRecord = async (recordId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer définitivement cet enregistrement médical ?')) {
       try {

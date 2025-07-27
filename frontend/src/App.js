@@ -164,6 +164,8 @@ function App() {
   const getAvailableRaces = (animalType) => {
     return animalType === 'poulet' ? RACES_POULET : RACES_PORC;
   };
+
+  const calculateAge = (birthDate) => {
     const birth = new Date(birthDate);
     const today = new Date();
     const diffTime = Math.abs(today - birth);

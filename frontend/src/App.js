@@ -6,6 +6,247 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Formulaire d'ajout d'animal mobile
+const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    category: '',
+    sex: 'Mâle',
+    age: '',
+    weight: '',
+    type: 'poulet'
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const animalData = {
+        ...formData,
+        weight: parseFloat(formData.weight)
+      };
+      
+      const response = await axios.post(`${API}/animals`, animalData);
+      
+      if (response.status === 200 || response.status === 201) {
+        onAdd(response.data);
+        setFormData({
+          name: '',
+          category: '',
+          sex: 'Mâle',
+          age: '',
+          weight: '',
+          type: 'poulet'
+        });
+        onClose();
+        alert('🎉 Animal ajouté avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout:', error);
+      alert('❌ Erreur lors de l\'ajout de l\'animal');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-green-600 text-white p-4 rounded-t-2xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">🐄 Ajouter un Animal</h2>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-green-700 rounded-lg transition-colors"
+              disabled={isSubmitting}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Formulaire */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Nom de l'animal */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Nom de l'animal *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder="Ex: Poulet #001, Cochon Marie..."
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Type d'animal */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Type d'animal *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('type', 'poulet')}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  formData.type === 'poulet'
+                    ? 'bg-yellow-500 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                🐔 Poulet
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('type', 'porc')}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  formData.type === 'porc'
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                🐷 Porc
+              </button>
+            </div>
+          </div>
+
+          {/* Catégorie/Race */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Race/Catégorie *
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) => handleChange('category', e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500"
+              required
+            >
+              <option value="">Sélectionner une race...</option>
+              {formData.type === 'poulet' ? (
+                <>
+                  <option value="Plymouth Rock">Plymouth Rock</option>
+                  <option value="Sussex">Sussex</option>
+                  <option value="Rhode Island Red">Rhode Island Red</option>
+                  <option value="Leghorn">Leghorn</option>
+                </>
+              ) : (
+                <>
+                  <option value="Large White">Large White</option>
+                  <option value="Landrace">Landrace</option>
+                  <option value="Duroc">Duroc</option>
+                  <option value="Yorkshire">Yorkshire</option>
+                </>
+              )}
+            </select>
+          </div>
+
+          {/* Sexe */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Sexe *
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleChange('sex', 'Mâle')}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  formData.sex === 'Mâle'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                ♂️ Mâle
+              </button>
+              <button
+                type="button"
+                onClick={() => handleChange('sex', 'Femelle')}
+                className={`p-3 rounded-xl font-medium transition-all ${
+                  formData.sex === 'Femelle'
+                    ? 'bg-pink-500 text-white'
+                    : 'bg-gray-100 text-gray-700'
+                }`}
+              >
+                ♀️ Femelle
+              </button>
+            </div>
+          </div>
+
+          {/* Âge */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Âge *
+            </label>
+            <input
+              type="text"
+              value={formData.age}
+              onChange={(e) => handleChange('age', e.target.value)}
+              placeholder="Ex: 30 jours, 2 mois, 1 an..."
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Poids */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Poids (kg) *
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={formData.weight}
+              onChange={(e) => handleChange('weight', e.target.value)}
+              placeholder="Ex: 1.5"
+              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          {/* Boutons */}
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Ajout...
+                </>
+              ) : (
+                <>
+                  ➕ Ajouter l'animal
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Menu mobile optimisé avec navigation française
 const MobileMenu = ({ isOpen, onClose }) => {
   if (!isOpen) return null;

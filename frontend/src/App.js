@@ -962,15 +962,6 @@ function App() {
                         </div>
                         
                         <div className="flex flex-col space-y-1 ml-4">
-                          {record.date_rappel && (
-                            <button
-                              onClick={() => handleMarkReminderDone(record.id)}
-                              className="bg-green-100 hover:bg-green-200 text-green-800 px-2 py-1 rounded text-xs"
-                              title="Marquer le rappel comme effectué"
-                            >
-                              ✓ Rappel fait
-                            </button>
-                          )}
                           <button
                             onClick={() => handleDeleteMedicalRecord(record.id)}
                             className="bg-red-100 hover:bg-red-200 text-red-800 px-2 py-1 rounded text-xs"

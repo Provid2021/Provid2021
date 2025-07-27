@@ -283,6 +283,56 @@ function App() {
     fetchMedicalRecords(animal.id);
   };
 
+  const handleMarkReminderDone = async (recordId) => {
+    if (window.confirm('Marquer ce rappel comme effectué (supprime la date de rappel) ?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/medical-records/${recordId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            date_rappel: null // Remove the reminder date
+          }),
+        });
+        
+        if (response.ok) {
+          fetchUpcomingReminders(); // Refresh reminders
+          alert('Rappel marqué comme effectué !');
+        } else {
+          alert('Erreur lors de la mise à jour');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+      }
+    }
+  };
+
+  const handleDeleteMedicalRecord = async (recordId) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer définitivement cet enregistrement médical ?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/medical-records/${recordId}`, {
+          method: 'DELETE',
+        });
+        
+        if (response.ok) {
+          fetchUpcomingReminders(); // Refresh reminders
+          // Also refresh medical records if modal is open
+          if (selectedAnimalForMedical) {
+            fetchMedicalRecords(selectedAnimalForMedical.id);
+          }
+          alert('Enregistrement supprimé avec succès !');
+        } else {
+          alert('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+      }
+    }
+  };
+
   // Obtenir les races disponibles selon le type d'animal sélectionné
   const getAvailableRaces = (animalType) => {
     return animalType === 'poulet' ? RACES_POULET : RACES_PORC;

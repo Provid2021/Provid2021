@@ -1578,31 +1578,51 @@ function App() {
 
                   {(reproductionFormData.type_event === 'saillie' || reproductionFormData.type_event === 'insemination') && (
                     <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Mâle reproducteur</label>
-                        <select
-                          value={reproductionFormData.male_id}
-                          onChange={(e) => setReproductionFormData({...reproductionFormData, male_id: e.target.value})}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-                        >
-                          <option value="">Sélectionnez un mâle</option>
-                          {breedingMales.map((male) => (
-                            <option key={male.id} value={male.id}>
-                              {male.nom || `${male.type} #${male.id.slice(-4)}`} - {male.race}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Ou mâle externe</label>
-                        <input
-                          type="text"
-                          value={reproductionFormData.male_info}
-                          onChange={(e) => setReproductionFormData({...reproductionFormData, male_info: e.target.value})}
-                          className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-                          placeholder="Informations sur le mâle externe"
-                        />
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Mâle reproducteur *</label>
+                        <div className="bg-gray-50 p-4 rounded-lg border">
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-sm text-gray-600 mb-1">Choisir un mâle de votre élevage:</label>
+                              <select
+                                value={reproductionFormData.male_id}
+                                onChange={(e) => setReproductionFormData({...reproductionFormData, male_id: e.target.value, male_info: ''})}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                              >
+                                <option value="">-- Sélectionnez un mâle de votre élevage --</option>
+                                {breedingMales.map((male) => (
+                                  <option key={male.id} value={male.id}>
+                                    {male.nom || `${male.type} #${male.id.slice(-4)}`} - {male.race} - {calculateAge(male.date_naissance)}
+                                  </option>
+                                ))}
+                              </select>
+                              {breedingMales.length === 0 && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Aucun mâle {selectedAnimalForReproduction?.type} trouvé dans votre élevage
+                                </p>
+                              )}
+                            </div>
+                            
+                            <div className="text-center text-gray-500 text-sm">--- OU ---</div>
+                            
+                            <div>
+                              <label className="block text-sm text-gray-600 mb-1">Mâle externe (hors élevage):</label>
+                              <input
+                                type="text"
+                                value={reproductionFormData.male_info}
+                                onChange={(e) => setReproductionFormData({...reproductionFormData, male_info: e.target.value, male_id: ''})}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-pink-500 focus:border-pink-500"
+                                placeholder="Ex: Verrat Yorkshire de l'élevage Martin, 3 ans"
+                              />
+                            </div>
+                          </div>
+                          
+                          {!reproductionFormData.male_id && !reproductionFormData.male_info && (
+                            <p className="text-xs text-red-500 mt-2">
+                              ⚠️ Veuillez sélectionner un mâle de votre élevage OU saisir les informations d'un mâle externe
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </>
                   )}

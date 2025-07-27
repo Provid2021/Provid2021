@@ -863,7 +863,7 @@ function App() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
             <div className="flex items-center">
               <div className="flex-shrink-0">
@@ -930,6 +930,24 @@ function App() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Femelles</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.females || 0}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="text-emerald-600">💰</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Bénéfice</p>
+                <p className={`text-lg font-bold ${
+                  (financialStats.resume?.benefice || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {(financialStats.resume?.benefice || 0).toFixed(2)}€
+                </p>
               </div>
             </div>
           </div>

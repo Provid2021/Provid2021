@@ -945,7 +945,7 @@ function App() {
                   />
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
+                <div className="flex justify-end space-x-3 pt-4 border-t">
                   <button
                     type="button"
                     onClick={() => {
@@ -961,15 +961,16 @@ function App() {
                       });
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    disabled={loading}
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
-                    disabled={loading}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50"
+                    disabled={loading || !medicalFormData.date_intervention || !medicalFormData.type_intervention}
+                    className="px-6 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {loading ? 'Sauvegarde...' : 'Ajouter'}
+                    {loading ? 'Enregistrement...' : '💾 Enregistrer le soin'}
                   </button>
                 </div>
               </form>

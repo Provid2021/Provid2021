@@ -58,6 +58,7 @@ function App() {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [filterType, setFilterType] = useState('');
   const [filterCategory, setFilterCategory] = useState(''); // New filter for categories
+  const [filterStatus, setFilterStatus] = useState('actif'); // New filter for status
   const [sortBy, setSortBy] = useState('age'); // New sort option
   const [loading, setLoading] = useState(false);
   

@@ -1061,17 +1061,60 @@ const EditAnimalModal = ({ isOpen, onClose, animal, onUpdate }) => {
   );
 };
 
-// Formulaire d'ajout d'animal mobile
+// Formulaire d'ajout d'animal avec calendrier et suggestions
 const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
     name: '',
     category: '',
     sex: 'Mâle',
-    age: '',
+    birth_date: '',
     weight: '',
     type: 'poulet'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [calculatedAge, setCalculatedAge] = useState('');
+  const [weightSuggestions, setWeightSuggestions] = useState([]);
+
+  // Calculer l'âge automatiquement basé sur la date de naissance
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return '';
+    
+    const birth = new Date(birthDate);
+    const now = new Date();
+    const diffTime = Math.abs(now - birth);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) {
+      return `${diffDays} jour${diffDays > 1 ? 's' : ''}`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} mois`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      const remainingMonths = Math.floor((diffDays % 365) / 30);
+      return `${years} an${years > 1 ? 's' : ''}${remainingMonths > 0 ? ` ${remainingMonths} mois` : ''}`;
+    }
+  };
+
+  // Suggestions de poids basées sur le type et l'âge
+  const generateWeightSuggestions = (type, birthDate) => {
+    if (!birthDate) return [];
+    
+    const ageInDays = Math.ceil(Math.abs(new Date() - new Date(birthDate)) / (1000 * 60 * 60 * 24));
+    
+    if (type === 'poulet') {
+      if (ageInDays <= 30) return [0.1, 0.2, 0.3, 0.4, 0.5];
+      if (ageInDays <= 60) return [0.8, 1.0, 1.2, 1.5, 1.8];
+      if (ageInDays <= 120) return [1.5, 2.0, 2.5, 3.0, 3.5];
+      return [2.5, 3.0, 3.5, 4.0, 4.5];
+    } else if (type === 'porc') {
+      if (ageInDays <= 60) return [5, 8, 10, 12, 15];
+      if (ageInDays <= 120) return [15, 20, 25, 30, 35];
+      if (ageInDays <= 365) return [40, 50, 60, 70, 80];
+      return [80, 100, 120, 150, 180];
+    }
+    return [];
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1080,8 +1123,12 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
     try {
       const animalData = {
         ...formData,
+        age: calculatedAge,
         weight: parseFloat(formData.weight)
       };
+      
+      // Supprimer birth_date du payload si on veut juste envoyer l'âge calculé
+      delete animalData.birth_date;
       
       const response = await axios.post(`${API}/animals`, animalData);
       
@@ -1091,10 +1138,12 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
           name: '',
           category: '',
           sex: 'Mâle',
-          age: '',
+          birth_date: '',
           weight: '',
           type: 'poulet'
         });
+        setCalculatedAge('');
+        setWeightSuggestions([]);
         onClose();
         alert('🎉 Animal ajouté avec succès !');
       }
@@ -1108,20 +1157,34 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    if (field === 'birth_date') {
+      const age = calculateAge(value);
+      setCalculatedAge(age);
+      const suggestions = generateWeightSuggestions(formData.type, value);
+      setWeightSuggestions(suggestions);
+    } else if (field === 'type') {
+      const suggestions = generateWeightSuggestions(value, formData.birth_date);
+      setWeightSuggestions(suggestions);
+    }
+  };
+
+  const handleWeightSuggestion = (weight) => {
+    setFormData(prev => ({ ...prev, weight: weight.toString() }));
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="professional-modal rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-green-600 text-white p-4 rounded-t-2xl">
+        <div className="professional-modal-header text-white p-3 rounded-t-2xl">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold">🐄 Ajouter un Animal</h2>
+            <h2 className="text-lg font-bold">🐄 Ajouter un Animal</h2>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-green-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-600 rounded-lg transition-colors"
               disabled={isSubmitting}
             >
               ✕
@@ -1130,10 +1193,10 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
         </div>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-3">
           {/* Nom de l'animal */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Nom de l'animal *
             </label>
             <input
@@ -1141,24 +1204,24 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="Ex: Poulet #001, Cochon Marie..."
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
               required
             />
           </div>
 
           {/* Type d'animal */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Type d'animal *
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleChange('type', 'poulet')}
-                className={`p-3 rounded-xl font-medium transition-all ${
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
                   formData.type === 'poulet'
-                    ? 'bg-yellow-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'gradient-professional-orange text-white'
+                    : 'btn-secondary'
                 }`}
               >
                 🐔 Poulet
@@ -1166,10 +1229,10 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
               <button
                 type="button"
                 onClick={() => handleChange('type', 'porc')}
-                className={`p-3 rounded-xl font-medium transition-all ${
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
                   formData.type === 'porc'
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'gradient-professional-red text-white'
+                    : 'btn-secondary'
                 }`}
               >
                 🐷 Porc
@@ -1179,13 +1242,13 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
 
           {/* Catégorie/Race */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Race/Catégorie *
             </label>
             <select
               value={formData.category}
               onChange={(e) => handleChange('category', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500"
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 bg-gray-800 text-white text-sm"
               required
             >
               <option value="">Sélectionner une race...</option>
@@ -1209,17 +1272,17 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
 
           {/* Sexe */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Sexe *
             </label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleChange('sex', 'Mâle')}
-                className={`p-3 rounded-xl font-medium transition-all ${
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
                   formData.sex === 'Mâle'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'gradient-professional-blue text-white'
+                    : 'btn-secondary'
                 }`}
               >
                 ♂️ Mâle
@@ -1227,10 +1290,10 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
               <button
                 type="button"
                 onClick={() => handleChange('sex', 'Femelle')}
-                className={`p-3 rounded-xl font-medium transition-all ${
+                className={`p-2 rounded-lg font-medium transition-all text-xs ${
                   formData.sex === 'Femelle'
-                    ? 'bg-pink-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'gradient-professional-purple text-white'
+                    : 'btn-secondary'
                 }`}
               >
                 ♀️ Femelle
@@ -1238,24 +1301,29 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
             </div>
           </div>
 
-          {/* Âge */}
+          {/* Date de naissance avec calendrier */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Âge *
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
+              Date de naissance *
             </label>
             <input
-              type="text"
-              value={formData.age}
-              onChange={(e) => handleChange('age', e.target.value)}
-              placeholder="Ex: 30 jours, 2 mois, 1 an..."
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              type="date"
+              value={formData.birth_date}
+              onChange={(e) => handleChange('birth_date', e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
               required
             />
+            {calculatedAge && (
+              <p className="text-xs text-green-400 mt-1">
+                📅 Âge calculé: {calculatedAge}
+              </p>
+            )}
           </div>
 
-          {/* Poids */}
+          {/* Poids avec suggestions */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-xs font-semibold text-gray-300 mb-1">
               Poids (kg) *
             </label>
             <input
@@ -1263,30 +1331,49 @@ const AddAnimalModal = ({ isOpen, onClose, onAdd }) => {
               step="0.1"
               value={formData.weight}
               onChange={(e) => handleChange('weight', e.target.value)}
-              placeholder="Ex: 1.5"
-              className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              placeholder="Entrez le poids ou choisissez une suggestion"
+              className="w-full p-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-800 text-white text-sm"
               required
             />
+            
+            {/* Suggestions de poids */}
+            {weightSuggestions.length > 0 && (
+              <div className="mt-1">
+                <p className="text-xs text-gray-400 mb-1">💡 Suggestions de poids :</p>
+                <div className="flex flex-wrap gap-1">
+                  {weightSuggestions.map((weight, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleWeightSuggestion(weight)}
+                      className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs hover:bg-gray-600 transition-colors"
+                    >
+                      {weight} kg
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Boutons */}
-          <div className="flex space-x-3 pt-4">
+          <div className="flex space-x-2 pt-3">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+              className="flex-1 py-2 px-3 btn-secondary rounded-lg font-medium transition-colors disabled:opacity-50 text-sm"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+              className="flex-1 py-2 px-3 btn-success rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center text-sm"
             >
               {isSubmitting ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                   Ajout...
                 </>
               ) : (

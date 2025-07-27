@@ -43,6 +43,7 @@ function App() {
   const [formData, setFormData] = useState({
     type: 'poulet',
     race: '',
+    raceAutre: '',
     sexe: 'M',
     date_naissance: '',
     poids: '',

@@ -450,14 +450,20 @@ const AnimalCard = ({ animal, onEdit, onDelete, onSell }) => {
   );
 };
 
-// Section de filtres améliorée en français
-const FilterSection = ({ filters, onFilterChange }) => {
+// Section de filtres améliorée avec compteurs dynamiques
+const FilterSection = ({ filters, onFilterChange, animals }) => {
+  // Calculer les compteurs en temps réel
+  const activeCount = animals.filter(a => a.status === 'actif').length;
+  const soldCount = animals.filter(a => a.status === 'vendu').length;
+  const poultryCount = animals.filter(a => a.type === 'poulet').length;
+  const pigCount = animals.filter(a => a.type === 'porc').length;
+  
   return (
     <div className="bg-white p-4 shadow-sm border-b border-gray-200">
       <h2 className="text-lg font-bold mb-4 text-gray-800">🔍 Filtres et tri</h2>
       
       <div className="space-y-4">
-        {/* Filtre par statut */}
+        {/* Filtre par statut avec compteurs dynamiques */}
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-3">Statut des animaux :</p>
           <div className="flex space-x-2">
@@ -469,7 +475,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              ✅ Actifs ({filters.status === 'actif' ? 'sélectionné' : 'tout'})
+              ✅ Actifs ({activeCount})
             </button>
             <button
               onClick={() => onFilterChange('status', 'vendu')}
@@ -479,12 +485,12 @@ const FilterSection = ({ filters, onFilterChange }) => {
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              💰 Vendus (0)
+              💰 Vendus ({soldCount})
             </button>
           </div>
         </div>
 
-        {/* Filtre par type d'animal */}
+        {/* Filtre par type d'animal avec compteurs */}
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-3">Filtrer par type d'animal :</p>
           <div className="grid grid-cols-3 gap-2">
@@ -496,7 +502,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              🏠 Tous
+              🏠 Tous ({animals.length})
             </button>
             <button
               onClick={() => onFilterChange('type', 'poulet')}
@@ -506,7 +512,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              🐔 Poulets
+              🐔 Poulets ({poultryCount})
             </button>
             <button
               onClick={() => onFilterChange('type', 'porc')}
@@ -516,7 +522,7 @@ const FilterSection = ({ filters, onFilterChange }) => {
                   : 'bg-gray-100 text-gray-700 active:bg-gray-200'
               }`}
             >
-              🐷 Porcs
+              🐷 Porcs ({pigCount})
             </button>
           </div>
         </div>

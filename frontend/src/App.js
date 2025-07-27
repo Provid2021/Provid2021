@@ -1052,92 +1052,104 @@ function App() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
+        {/* Enhanced Agricultural Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+          {/* Total Animals */}
+          <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-xl p-6 border-l-4 border-green-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-bold">📊</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🌾</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total_animals || 0}</p>
+                <p className="text-sm font-semibold text-green-700 uppercase tracking-wide">Cheptel Total</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total_animals || 0}</p>
+                <p className="text-xs text-green-600">Animaux actifs</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+          {/* Poulets */}
+          <div className="bg-gradient-to-br from-white to-amber-50 rounded-2xl shadow-xl p-6 border-l-4 border-amber-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <span className="text-yellow-600">🐔</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🐔</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Poulets</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total_poulets || 0}</p>
+                <p className="text-sm font-semibold text-amber-700 uppercase tracking-wide">Volailles</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total_poulets || 0}</p>
+                <p className="text-xs text-amber-600">{stats.total_vagues || 0} vague(s)</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-pink-500">
+          {/* Porcs */}
+          <div className="bg-gradient-to-br from-white to-pink-50 rounded-2xl shadow-xl p-6 border-l-4 border-pink-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center">
-                  <span className="text-pink-600">🐷</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🐷</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Porcs</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total_porcs || 0}</p>
+                <p className="text-sm font-semibold text-pink-700 uppercase tracking-wide">Porcins</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.total_porcs || 0}</p>
+                <p className="text-xs text-pink-600">Élevage individuel</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+          {/* Males */}
+          <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl p-6 border-l-4 border-blue-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600">♂</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xl">♂</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Mâles</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.males || 0}</p>
+                <p className="text-sm font-semibold text-blue-700 uppercase tracking-wide">Mâles</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.males || 0}</p>
+                <p className="text-xs text-blue-600">Reproducteurs</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+          {/* Females */}
+          <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl p-6 border-l-4 border-purple-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600">♀</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-violet-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xl">♀</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Femelles</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.females || 0}</p>
+                <p className="text-sm font-semibold text-purple-700 uppercase tracking-wide">Femelles</p>
+                <p className="text-3xl font-bold text-gray-900">{stats.females || 0}</p>
+                <p className="text-xs text-purple-600">Reproductrices</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-emerald-500">
+          {/* Financial Performance */}
+          <div className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl shadow-xl p-6 border-l-4 border-emerald-500 hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                  <span className="text-emerald-600">💰</span>
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">💰</span>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Bénéfice</p>
-                <p className={`text-lg font-bold ${
-                  (financialStats.resume?.benefice || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                <p className="text-sm font-semibold text-emerald-700 uppercase tracking-wide">Rentabilité</p>
+                <p className={`text-2xl font-bold ${
+                  (financialStats.resume?.benefice || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'
                 }`}>
                   {(financialStats.resume?.benefice || 0).toFixed(0)} FCFA
                 </p>
+                <p className="text-xs text-emerald-600">Bénéfice mensuel</p>
               </div>
             </div>
           </div>

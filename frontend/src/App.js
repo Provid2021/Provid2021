@@ -704,7 +704,7 @@ const Home = () => {
             <p className="text-gray-500 text-lg mb-4">Aucun animal ne correspond à vos critères de recherche</p>
             <p className="text-gray-400 text-sm mb-6">Essayez de modifier vos filtres ou d'ajouter de nouveaux animaux</p>
             <button 
-              onClick={() => alert('Fonctionnalité Ajouter Animal à venir')}
+              onClick={openAddModal}
               className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium active:bg-green-700 transform active:scale-95 transition-all shadow-lg"
             >
               ➕ Ajouter un animal

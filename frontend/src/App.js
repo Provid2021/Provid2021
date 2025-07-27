@@ -2491,14 +2491,14 @@ function App() {
                 <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border-l-4 border-red-500">
                   <h4 className="text-lg font-semibold text-red-800 mb-2">💸 Dépenses</h4>
                   <p className="text-3xl font-bold text-red-600">
-                    {(financialStats.resume?.total_depenses || 0).toFixed(2)}€
+                    {(financialStats.resume?.total_depenses || 0).toFixed(0)} FCFA
                   </p>
                 </div>
 
                 <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border-l-4 border-green-500">
                   <h4 className="text-lg font-semibold text-green-800 mb-2">💰 Recettes</h4>
                   <p className="text-3xl font-bold text-green-600">
-                    {(financialStats.resume?.total_recettes || 0).toFixed(2)}€
+                    {(financialStats.resume?.total_recettes || 0).toFixed(0)} FCFA
                   </p>
                 </div>
 
@@ -2515,7 +2515,7 @@ function App() {
                   <p className={`text-3xl font-bold ${
                     (financialStats.resume?.benefice || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'
                   }`}>
-                    {(financialStats.resume?.benefice || 0).toFixed(2)}€
+                    {(financialStats.resume?.benefice || 0).toFixed(0)} FCFA
                   </p>
                 </div>
 

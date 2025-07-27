@@ -1547,17 +1547,17 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="loading-screen-professional">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Chargement...</p>
+          <div className="loading-spinner-professional"></div>
+          <p className="mt-4 text-gray-300 font-medium">Chargement de l'élevage...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <MobileHeader 
         onAddAnimal={openAddModal} 
         onMenuToggle={() => setIsMenuOpen(true)}
@@ -1603,7 +1603,7 @@ const Home = () => {
         animals={animals}
       />
       
-      {/* Statistics Section */}
+      {/* Statistics Section avec design professionnel */}
       <div className="p-4 space-y-4">
         {/* Top Row */}
         <div className="grid grid-cols-1 gap-4">
@@ -1612,8 +1612,7 @@ const Home = () => {
             title="Cheptel Total"
             value={stats.total_livestock || 0}
             subtitle="Animaux actifs dans l'élevage"
-            color="bg-gradient-to-r from-green-500 to-green-600"
-            className="col-span-1"
+            className="gradient-professional-green"
           />
         </div>
         
@@ -1624,14 +1623,14 @@ const Home = () => {
             title="Volailles"
             value={stats.poultry?.count || 0}
             subtitle="4 vague(s)"
-            color="bg-gradient-to-r from-orange-500 to-orange-600"
+            className="gradient-professional-orange"
           />
           <StatCard
             icon="🐷"
             title="Porcins"
             value={stats.pigs?.count || 0}
             subtitle="Élevage individuel"
-            color="bg-gradient-to-r from-pink-500 to-pink-600"
+            className="gradient-professional-red"
           />
         </div>
         
@@ -1642,14 +1641,14 @@ const Home = () => {
             title="Mâles"
             value={stats.males || 0}
             subtitle="Reproducteurs"
-            color="bg-gradient-to-r from-blue-500 to-blue-600"
+            className="gradient-professional-blue"
           />
           <StatCard
             icon="♀️"
             title="Femelles"
             value={stats.females || 0}
             subtitle="Reproductrices"
-            color="bg-gradient-to-r from-purple-500 to-purple-600"
+            className="gradient-professional-purple"
           />
         </div>
         
@@ -1660,21 +1659,21 @@ const Home = () => {
             title="Soins"
             value={stats.medical_records || 0}
             subtitle="Dossiers médicaux"
-            color="bg-gradient-to-r from-blue-600 to-blue-700"
+            className="gradient-professional-blue"
           />
           <StatCard
             icon="🐣"
             title="Reprod."
             value={stats.reproduction_records || 0}
             subtitle="Cycles actifs"
-            color="bg-gradient-to-r from-pink-600 to-pink-700"
+            className="gradient-professional-purple"
           />
           <StatCard
             icon="🤰"
             title="Gestantes"
             value={stats.pregnant_animals || 0}
             subtitle="En gestation"
-            color="bg-gradient-to-r from-purple-600 to-purple-700"
+            className="gradient-professional-red"
           />
         </div>
         
@@ -1685,22 +1684,86 @@ const Home = () => {
             title="Rentabilité Mensuelle"
             value="3,504,444 FCFA"
             subtitle="Bénéfice net mensuel"
-            color="bg-gradient-to-r from-green-600 to-green-700"
+            className="gradient-professional-green"
           />
         </div>
       </div>
 
-      {/* Filters */}
-      <FilterSection 
-        filters={filters} 
-        onFilterChange={handleFilterChange}
-        animals={animals}
-      />
+      {/* Filters avec design sombre */}
+      <div className="professional-card mx-4 mb-4 p-4">
+        <h2 className="text-lg font-bold mb-4 text-white">🔍 Filtres et tri</h2>
+        
+        <div className="space-y-4">
+          {/* Filtre par statut avec design sombre */}
+          <div>
+            <p className="text-sm font-semibold text-gray-300 mb-3">Statut des animaux :</p>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleFilterChange('status', 'actif')}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                  filters.status === 'actif' 
+                    ? 'btn-success' 
+                    : 'btn-secondary'
+                }`}
+              >
+                ✅ Actifs ({animals.filter(a => a.status === 'actif').length})
+              </button>
+              <button
+                onClick={() => handleFilterChange('status', 'vendu')}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                  filters.status === 'vendu' 
+                    ? 'btn-warning' 
+                    : 'btn-secondary'
+                }`}
+              >
+                💰 Vendus ({animals.filter(a => a.status === 'vendu').length})
+              </button>
+            </div>
+          </div>
+
+          {/* Filtre par type d'animal */}
+          <div>
+            <p className="text-sm font-semibold text-gray-300 mb-3">Filtrer par type d'animal :</p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => handleFilterChange('type', 'all')}
+                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                  filters.type === 'all' 
+                    ? 'btn-secondary border-white' 
+                    : 'btn-secondary'
+                }`}
+              >
+                🏠 Tous ({animals.length})
+              </button>
+              <button
+                onClick={() => handleFilterChange('type', 'poulet')}
+                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                  filters.type === 'poulet' 
+                    ? 'gradient-professional-orange text-white border-orange-400' 
+                    : 'btn-secondary'
+                }`}
+              >
+                🐔 Poulets ({animals.filter(a => a.type === 'poulet').length})
+              </button>
+              <button
+                onClick={() => handleFilterChange('type', 'porc')}
+                className={`px-3 py-3 rounded-xl text-sm font-medium transition-all transform active:scale-95 mobile-button-professional ${
+                  filters.type === 'porc' 
+                    ? 'gradient-professional-red text-white border-pink-400' 
+                    : 'btn-secondary'
+                }`}
+              >
+                🐷 Porcs ({animals.filter(a => a.type === 'porc').length})
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Animals List */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-white">
             Liste des Animaux ({filteredAnimals.length})
           </h2>
         </div>
@@ -1723,12 +1786,12 @@ const Home = () => {
         {filteredAnimals.length === 0 && (
           <div className="text-center py-12 px-4">
             <div className="text-6xl mb-4">🐄</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Aucun animal trouvé</h3>
-            <p className="text-gray-500 text-lg mb-4">Aucun animal ne correspond à vos critères de recherche</p>
-            <p className="text-gray-400 text-sm mb-6">Essayez de modifier vos filtres ou d'ajouter de nouveaux animaux</p>
+            <h3 className="text-xl font-bold text-white mb-2">Aucun animal trouvé</h3>
+            <p className="text-gray-400 text-lg mb-4">Aucun animal ne correspond à vos critères de recherche</p>
+            <p className="text-gray-500 text-sm mb-6">Essayez de modifier vos filtres ou d'ajouter de nouveaux animaux</p>
             <button 
               onClick={openAddModal}
-              className="bg-green-600 text-white px-6 py-3 rounded-xl font-medium active:bg-green-700 transform active:scale-95 transition-all shadow-lg"
+              className="btn-success px-6 py-3 rounded-xl font-medium mobile-button-professional"
             >
               ➕ Ajouter un animal
             </button>
@@ -1736,18 +1799,18 @@ const Home = () => {
         )}
       </div>
       
-      {/* Bouton d'action flottant pour mobile */}
+      {/* Bouton d'action flottant professionnel */}
       <button
         onClick={openAddModal}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-full shadow-xl flex items-center justify-center text-2xl active:scale-95 transform transition-all lg:hidden hover:shadow-2xl"
+        className="fixed bottom-6 right-6 w-16 h-16 gradient-professional-green text-white rounded-full shadow-2xl flex items-center justify-center text-2xl active:scale-95 transform transition-all lg:hidden hover:shadow-2xl border border-green-500"
         aria-label="Ajouter un animal"
       >
         <span className="text-3xl">+</span>
       </button>
       
-      {/* Badge version mobile */}
-      <div className="fixed bottom-20 right-6 bg-white px-3 py-2 rounded-full shadow-lg border lg:hidden">
-        <span className="text-xs text-gray-600">📱 Gestion Complète Mobile</span>
+      {/* Badge version professionnelle */}
+      <div className="fixed bottom-20 right-6 professional-card px-3 py-2 rounded-full shadow-xl border border-gray-600 lg:hidden">
+        <span className="text-xs text-gray-300">📱 Version Pro Mobile</span>
       </div>
     </div>
   );

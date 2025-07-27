@@ -51,7 +51,7 @@ class EventType(str, Enum):
     OTHER = "autre"
 
 
-# Modèles existants
+# Modèles mis à jour pour la gestion par vagues
 class Animal(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
@@ -62,6 +62,12 @@ class Animal(BaseModel):
     type: str  # "poulet" or "porc"
     status: str = "actif"  # "actif" or "vendu"
     reproduction_status: Optional[ReproductionStatus] = ReproductionStatus.AVAILABLE
+    # Nouveaux champs pour la gestion par lots
+    batch_number: Optional[str] = None
+    initial_quantity: int = 1  # Quantité initiale du lot
+    current_quantity: int = 1  # Quantité actuelle disponible
+    unit_price: Optional[float] = None  # Prix unitaire d'achat
+    batch_date: datetime = Field(default_factory=datetime.utcnow)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class AnimalCreate(BaseModel):
@@ -71,6 +77,10 @@ class AnimalCreate(BaseModel):
     age: str
     weight: float
     type: str
+    # Nouveaux champs pour les lots
+    initial_quantity: int = 1
+    unit_price: Optional[float] = None
+    batch_number: Optional[str] = None
 
 class AnimalUpdate(BaseModel):
     name: Optional[str] = None
@@ -80,6 +90,32 @@ class AnimalUpdate(BaseModel):
     weight: Optional[float] = None
     status: Optional[str] = None
     reproduction_status: Optional[ReproductionStatus] = None
+    current_quantity: Optional[int] = None
+
+# Modèle de vente mis à jour
+class SaleRecord(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    batch_id: str  # ID du lot d'animaux
+    animal_type: str  # poulet ou porc
+    quantity_sold: int
+    unit_price: float
+    total_amount: float
+    buyer_name: Optional[str] = None
+    buyer_contact: Optional[str] = None
+    sale_date: datetime = Field(default_factory=datetime.utcnow)
+    payment_method: Optional[str] = "cash"
+    notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+class SaleRecordCreate(BaseModel):
+    batch_id: str
+    quantity_sold: int
+    unit_price: float
+    buyer_name: Optional[str] = None
+    buyer_contact: Optional[str] = None
+    sale_date: Optional[datetime] = None
+    payment_method: Optional[str] = "cash"
+    notes: Optional[str] = None
 
 
 # Nouveaux modèles pour la gestion médicale

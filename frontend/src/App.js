@@ -830,25 +830,33 @@ function App() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => {
-                setShowAddForm(true);
-                setSelectedAnimal(null);
-                setFormData({
-                  type: 'poulet',
-                  race: '',
-                  raceAutre: '',
-                  sexe: 'M',
-                  date_naissance: '',
-                  poids: '',
-                  nom: '',
-                  notes: ''
-                });
-              }}
-              className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              + Nouvel Animal
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowFinancialDashboard(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                💰 Finances
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddForm(true);
+                  setSelectedAnimal(null);
+                  setFormData({
+                    type: 'poulet',
+                    race: '',
+                    raceAutre: '',
+                    sexe: 'M',
+                    date_naissance: '',
+                    poids: '',
+                    nom: '',
+                    notes: ''
+                  });
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                + Nouvel Animal
+              </button>
+            </div>
           </div>
         </div>
       </header>

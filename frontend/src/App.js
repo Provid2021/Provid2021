@@ -91,6 +91,14 @@ function App() {
   const [financialRecords, setFinancialRecords] = useState([]);
   const [financialStats, setFinancialStats] = useState({});
 
+  // Add animals to wave states
+  const [showAddToWaveModal, setShowAddToWaveModal] = useState(false);
+  const [selectedWaveForAddition, setSelectedWaveForAddition] = useState(null);
+  const [addToWaveData, setAddToWaveData] = useState({
+    nombre_a_ajouter: '',
+    notes: ''
+  });
+
   const [formData, setFormData] = useState({
     type: 'poulet',
     race: '',

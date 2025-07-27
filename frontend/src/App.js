@@ -94,7 +94,7 @@ function App() {
       // Ensure proper data types and clean data
       const submitData = {
         type: formData.type,
-        race: formData.race.trim(),
+        race: formData.race === 'Autre' ? formData.raceAutre.trim() : formData.race,
         sexe: formData.sexe,
         date_naissance: formData.date_naissance,
         poids: parseFloat(formData.poids),

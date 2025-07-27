@@ -99,7 +99,10 @@ function App() {
     date_naissance: '',
     poids: '',
     nom: '',
-    notes: ''
+    notes: '',
+    nombre_animaux: '',
+    numero_vague: '',
+    photo_url: ''
   });
 
   const [medicalFormData, setMedicalFormData] = useState({

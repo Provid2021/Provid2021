@@ -226,9 +226,125 @@ async def get_animals():
 @api_router.post("/animals", response_model=Animal)
 async def create_animal(animal: AnimalCreate):
     animal_dict = animal.dict()
+    
+    # Générer un numéro de vague automatique si non fourni
+    if not animal_dict.get('batch_number'):
+        count = await db.animals.count_documents({})
+        animal_dict['batch_number'] = f"VAGUE_{animal_dict['type'].upper()}_{count + 1:03d}"
+    
+    # Définir la quantité actuelle égale à la quantité initiale
+    animal_dict['current_quantity'] = animal_dict['initial_quantity']
+    
     animal_obj = Animal(**animal_dict)
     await db.animals.insert_one(animal_obj.dict())
+    
+    # Ajouter à l'historique
+    history_event = HistoryEvent(
+        animal_id=animal_obj.id,
+        event_type=EventType.BIRTH,
+        title=f"Nouvelle vague: {animal_obj.name}",
+        description=f"Ajout de {animal_obj.initial_quantity} {animal_obj.type}(s) - {animal_obj.category}",
+        metadata={
+            "batch_number": animal_obj.batch_number,
+            "initial_quantity": animal_obj.initial_quantity,
+            "unit_price": animal_obj.unit_price
+        }
+    )
+    await db.history.insert_one(history_event.dict())
+    
     return animal_obj
+
+# Route pour vendre une quantité d'un lot
+@api_router.post("/animals/{batch_id}/sell")
+async def sell_from_batch(batch_id: str, sale_data: SaleRecordCreate):
+    # Trouver le lot
+    batch = await db.animals.find_one({"id": batch_id})
+    if not batch:
+        raise HTTPException(status_code=404, detail="Lot non trouvé")
+    
+    # Vérifier qu'il y a assez de stock
+    if batch["current_quantity"] < sale_data.quantity_sold:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Stock insuffisant. Disponible: {batch['current_quantity']}, Demandé: {sale_data.quantity_sold}"
+        )
+    
+    # Calculer le montant total
+    total_amount = sale_data.quantity_sold * sale_data.unit_price
+    
+    # Créer l'enregistrement de vente
+    sale_dict = sale_data.dict()
+    sale_dict['animal_type'] = batch['type']
+    sale_dict['total_amount'] = total_amount
+    if not sale_dict.get('sale_date'):
+        sale_dict['sale_date'] = datetime.utcnow()
+    
+    sale_record = SaleRecord(**sale_dict)
+    await db.sales.insert_one(sale_record.dict())
+    
+    # Mettre à jour la quantité du lot
+    new_quantity = batch["current_quantity"] - sale_data.quantity_sold
+    await db.animals.update_one(
+        {"id": batch_id},
+        {
+            "$set": {
+                "current_quantity": new_quantity,
+                "status": "vendu" if new_quantity == 0 else "actif"
+            }
+        }
+    )
+    
+    # Ajouter à l'historique
+    history_event = HistoryEvent(
+        animal_id=batch_id,
+        event_type=EventType.SALE,
+        title=f"Vente: {sale_data.quantity_sold} {batch['type']}(s)",
+        description=f"Vendu {sale_data.quantity_sold} {batch['type']}(s) à {sale_data.buyer_name or 'Acheteur'} pour {total_amount} FCFA",
+        cost=total_amount,
+        metadata={
+            "quantity_sold": sale_data.quantity_sold,
+            "unit_price": sale_data.unit_price,
+            "buyer_name": sale_data.buyer_name,
+            "remaining_quantity": new_quantity
+        }
+    )
+    await db.history.insert_one(history_event.dict())
+    
+    return {
+        "message": "Vente enregistrée avec succès",
+        "sale_id": sale_record.id,
+        "remaining_quantity": new_quantity,
+        "total_amount": total_amount
+    }
+
+# Route pour obtenir le stock actuel
+@api_router.get("/animals/stock/summary")
+async def get_stock_summary():
+    animals = await db.animals.find({"status": "actif"}).to_list(1000)
+    
+    stock_summary = {}
+    for animal in animals:
+        animal_type = animal.get('type', 'inconnu')
+        if animal_type not in stock_summary:
+            stock_summary[animal_type] = {
+                "total_batches": 0,
+                "total_quantity": 0,
+                "batches": []
+            }
+        
+        stock_summary[animal_type]["total_batches"] += 1
+        stock_summary[animal_type]["total_quantity"] += animal.get("current_quantity", 0)
+        stock_summary[animal_type]["batches"].append({
+            "id": animal["id"],
+            "name": animal["name"],
+            "batch_number": animal.get("batch_number"),
+            "current_quantity": animal.get("current_quantity", 0),
+            "initial_quantity": animal.get("initial_quantity", 0),
+            "category": animal["category"],
+            "age": animal["age"]
+        })
+    
+    return stock_summary
 
 @api_router.get("/animals/{animal_id}", response_model=Animal)
 async def get_animal(animal_id: str):

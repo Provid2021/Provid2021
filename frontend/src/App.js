@@ -75,6 +75,12 @@ function App() {
   const [showAddReproductionForm, setShowAddReproductionForm] = useState(false);
   const [upcomingBirths, setUpcomingBirths] = useState([]);
   const [breedingMales, setBreedingMales] = useState([]);
+  
+  // Animal profile states
+  const [showAnimalProfile, setShowAnimalProfile] = useState(false);
+  const [selectedAnimalForProfile, setSelectedAnimalForProfile] = useState(null);
+  const [profileMedicalRecords, setProfileMedicalRecords] = useState([]);
+  const [profileReproductionEvents, setProfileReproductionEvents] = useState([]);
 
   const [formData, setFormData] = useState({
     type: 'poulet',

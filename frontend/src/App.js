@@ -116,6 +116,7 @@ function App() {
         setFormData({
           type: 'poulet',
           race: '',
+          raceAutre: '',
           sexe: 'M',
           date_naissance: '',
           poids: '',

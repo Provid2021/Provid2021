@@ -551,8 +551,17 @@ const Home = () => {
     }
   };
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({ ...prev, [filterType]: value }));
+  const handleAddAnimal = (newAnimal) => {
+    setAnimals(prev => [...prev, newAnimal]);
+    fetchStats(); // Refresh statistics
+  };
+
+  const openAddModal = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalOpen(false);
   };
 
   // Filter animals based on current filters

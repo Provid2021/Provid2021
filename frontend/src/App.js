@@ -730,7 +730,11 @@ const Home = () => {
       </div>
 
       {/* Filters */}
-      <FilterSection filters={filters} onFilterChange={handleFilterChange} />
+      <FilterSection 
+        filters={filters} 
+        onFilterChange={handleFilterChange}
+        animals={animals}
+      />
 
       {/* Animals List */}
       <div className="p-4">

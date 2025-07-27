@@ -2312,6 +2312,337 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Financial Dashboard Modal */}
+      {showFinancialDashboard && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[90]">
+          <div className="relative top-5 mx-auto p-5 border w-11/12 md:w-5/6 lg:w-4/5 shadow-lg rounded-md bg-white max-h-[95vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-400 to-blue-500 flex items-center justify-center mr-4">
+                    <span className="text-white text-2xl">💰</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">Tableau de bord financier</h3>
+                    <p className="text-gray-600">
+                      Période: {financialStats.periode ? 
+                        `${formatDate(financialStats.periode.debut)} - ${formatDate(financialStats.periode.fin)}` :
+                        'Mois en cours'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowAddFinancialForm(true)}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md text-sm"
+                  >
+                    + Nouvelle transaction
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowFinancialDashboard(false);
+                      setFinancialRecords([]);
+                    }}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              {/* Financial Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border-l-4 border-red-500">
+                  <h4 className="text-lg font-semibold text-red-800 mb-2">💸 Dépenses</h4>
+                  <p className="text-3xl font-bold text-red-600">
+                    {(financialStats.resume?.total_depenses || 0).toFixed(2)}€
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border-l-4 border-green-500">
+                  <h4 className="text-lg font-semibold text-green-800 mb-2">💰 Recettes</h4>
+                  <p className="text-3xl font-bold text-green-600">
+                    {(financialStats.resume?.total_recettes || 0).toFixed(2)}€
+                  </p>
+                </div>
+
+                <div className={`bg-gradient-to-br p-6 rounded-xl border-l-4 ${
+                  (financialStats.resume?.benefice || 0) >= 0 
+                    ? 'from-emerald-50 to-emerald-100 border-emerald-500'
+                    : 'from-red-50 to-red-100 border-red-500'
+                }`}>
+                  <h4 className={`text-lg font-semibold mb-2 ${
+                    (financialStats.resume?.benefice || 0) >= 0 ? 'text-emerald-800' : 'text-red-800'
+                  }`}>
+                    📊 Bénéfice
+                  </h4>
+                  <p className={`text-3xl font-bold ${
+                    (financialStats.resume?.benefice || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'
+                  }`}>
+                    {(financialStats.resume?.benefice || 0).toFixed(2)}€
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border-l-4 border-blue-500">
+                  <h4 className="text-lg font-semibold text-blue-800 mb-2">📋 Transactions</h4>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {financialStats.resume?.nombre_transactions || 0}
+                  </p>
+                </div>
+              </div>
+
+              {/* Category Breakdown */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Expenses by Category */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">💸 Dépenses par catégorie</h4>
+                  <div className="space-y-3">
+                    {Object.entries(financialStats.depenses_par_categorie || {}).map(([category, amount]) => (
+                      <div key={category} className="flex justify-between items-center">
+                        <span className="text-gray-600 capitalize">{category}</span>
+                        <span className="font-semibold text-red-600">{amount.toFixed(2)}€</span>
+                      </div>
+                    ))}
+                    {Object.keys(financialStats.depenses_par_categorie || {}).length === 0 && (
+                      <p className="text-gray-500 text-sm">Aucune dépense enregistrée</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Income by Category */}
+                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-800 mb-4">💰 Recettes par catégorie</h4>
+                  <div className="space-y-3">
+                    {Object.entries(financialStats.recettes_par_categorie || {}).map(([category, amount]) => (
+                      <div key={category} className="flex justify-between items-center">
+                        <span className="text-gray-600 capitalize">{category}</span>
+                        <span className="font-semibold text-green-600">{amount.toFixed(2)}€</span>
+                      </div>
+                    ))}
+                    {Object.keys(financialStats.recettes_par_categorie || {}).length === 0 && (
+                      <p className="text-gray-500 text-sm">Aucune recette enregistrée</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={() => {
+                    setShowAddFinancialForm(true);
+                    setFinancialFormData({
+                      ...financialFormData,
+                      type_transaction: 'depense',
+                      date_transaction: new Date().toISOString().split('T')[0]
+                    });
+                  }}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg"
+                >
+                  💸 Ajouter une dépense
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddFinancialForm(true);
+                    setFinancialFormData({
+                      ...financialFormData,
+                      type_transaction: 'recette',
+                      date_transaction: new Date().toISOString().split('T')[0]
+                    });
+                  }}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg"
+                >
+                  💰 Ajouter une recette
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Financial Record Modal */}
+      {showAddFinancialForm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-[100]">
+          <div className="relative top-10 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {financialFormData.type_transaction === 'depense' ? '💸 Ajouter une dépense' : '💰 Ajouter une recette'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowAddFinancialForm(false);
+                    setFinancialFormData({
+                      type_transaction: 'depense',
+                      categorie: '',
+                      date_transaction: '',
+                      montant: '',
+                      animal_id: '',
+                      description: '',
+                      fournisseur_acheteur: '',
+                      notes: ''
+                    });
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <form className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Type de transaction *</label>
+                    <select
+                      value={financialFormData.type_transaction}
+                      onChange={(e) => setFinancialFormData({...financialFormData, type_transaction: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    >
+                      <option value="depense">💸 Dépense</option>
+                      <option value="recette">💰 Recette</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Catégorie *</label>
+                    <select
+                      value={financialFormData.categorie}
+                      onChange={(e) => setFinancialFormData({...financialFormData, categorie: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    >
+                      <option value="">Sélectionnez une catégorie</option>
+                      {financialFormData.type_transaction === 'depense' ? (
+                        <>
+                          <option value="alimentation">🌾 Alimentation</option>
+                          <option value="soins">🏥 Soins vétérinaires</option>
+                          <option value="equipement">🔧 Équipement</option>
+                          <option value="infrastructure">🏗️ Infrastructure</option>
+                          <option value="autre">📦 Autre</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="vente">🐷 Vente d'animaux</option>
+                          <option value="produits">🥚 Vente de produits</option>
+                          <option value="services">🛠️ Services</option>
+                          <option value="subventions">🏛️ Subventions</option>
+                          <option value="autre">💼 Autre</option>
+                        </>
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date *</label>
+                    <input
+                      type="date"
+                      value={financialFormData.date_transaction}
+                      onChange={(e) => setFinancialFormData({...financialFormData, date_transaction: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Montant (€) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={financialFormData.montant}
+                      onChange={(e) => setFinancialFormData({...financialFormData, montant: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      {financialFormData.type_transaction === 'depense' ? 'Fournisseur' : 'Acheteur'}
+                    </label>
+                    <input
+                      type="text"
+                      value={financialFormData.fournisseur_acheteur}
+                      onChange={(e) => setFinancialFormData({...financialFormData, fournisseur_acheteur: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder={financialFormData.type_transaction === 'depense' ? 'Nom du fournisseur' : 'Nom de l\'acheteur'}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Animal concerné (optionnel)</label>
+                    <select
+                      value={financialFormData.animal_id}
+                      onChange={(e) => setFinancialFormData({...financialFormData, animal_id: e.target.value})}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Aucun animal spécifique</option>
+                      {animals.map((animal) => (
+                        <option key={animal.id} value={animal.id}>
+                          {animal.nom || `${animal.type} #${animal.id.slice(-4)}`} - {animal.race}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description *</label>
+                  <input
+                    type="text"
+                    value={financialFormData.description}
+                    onChange={(e) => setFinancialFormData({...financialFormData, description: e.target.value})}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Description de la transaction"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Notes</label>
+                  <textarea
+                    value={financialFormData.notes}
+                    onChange={(e) => setFinancialFormData({...financialFormData, notes: e.target.value})}
+                    rows="3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="Notes additionnelles..."
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddFinancialForm(false);
+                      setFinancialFormData({
+                        type_transaction: 'depense',
+                        categorie: '',
+                        date_transaction: '',
+                        montant: '',
+                        animal_id: '',
+                        description: '',
+                        fournisseur_acheteur: '',
+                        notes: ''
+                      });
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-md transition-colors"
+                  >
+                    💾 Enregistrer la transaction
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

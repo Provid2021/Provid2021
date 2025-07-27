@@ -146,9 +146,10 @@ function App() {
   const fetchAnimals = async () => {
     setLoading(true);
     try {
-      const url = filterType ? 
-        `${API_BASE_URL}/api/animals?type=${filterType}` : 
-        `${API_BASE_URL}/api/animals`;
+      let url = `${API_BASE_URL}/api/animals?statut=${filterStatus}`;
+      if (filterType) {
+        url += `&type=${filterType}`;
+      }
       const response = await fetch(url);
       const data = await response.json();
       setAnimals(data.animals || []);

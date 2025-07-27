@@ -166,6 +166,25 @@ async def create_animal(animal: Animal):
         animal_dict = animal.dict()
         animal_dict["id"] = str(uuid.uuid4())
         animal_dict["statut"] = "actif"  # Set default status
+        
+        # Set defaults based on type
+        if animal_dict["type"] == "poulet":
+            # For poulets (waves), sexe should be None and nombre_animaux defaults to 1 if not set
+            animal_dict["sexe"] = None
+            if not animal_dict.get("nombre_animaux"):
+                animal_dict["nombre_animaux"] = 1
+            if not animal_dict.get("numero_vague"):
+                # Auto-generate wave number if not provided
+                existing_waves = animals_collection.find({"type": "poulet"}).distinct("numero_vague")
+                wave_numbers = [int(w.replace("Vague ", "")) for w in existing_waves if w and w.startswith("Vague ")]
+                next_wave = max(wave_numbers, default=0) + 1
+                animal_dict["numero_vague"] = f"Vague {next_wave}"
+        else:
+            # For porcs, nombre_animaux is always 1 and sexe is required
+            animal_dict["nombre_animaux"] = 1
+            if not animal_dict.get("sexe"):
+                raise HTTPException(status_code=400, detail="Le sexe est obligatoire pour les porcs")
+        
         animal_dict["created_at"] = datetime.now().isoformat()
         animal_dict["updated_at"] = datetime.now().isoformat()
         

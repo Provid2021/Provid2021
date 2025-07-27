@@ -1186,16 +1186,16 @@ const MobileHeader = ({ onAddAnimal, onMenuToggle, onFinancesClick, onMedicalCli
   );
 };
 
-// Statistics Card Component avec design professionnel sombre
+// Statistics Card Component compact
 const StatCard = ({ icon, title, value, subtitle, color, className = "" }) => {
   return (
-    <div className={`stat-card-professional rounded-xl p-4 text-white shadow-xl transform transition-all hover:scale-105 active:scale-95 ${className}`}>
-      <div className="flex items-center space-x-3">
-        <div className="text-3xl opacity-90">{icon}</div>
+    <div className={`stat-card-professional rounded-lg p-2 text-white shadow-xl transform transition-all hover:scale-105 active:scale-95 ${className}`}>
+      <div className="flex items-center space-x-2">
+        <div className="text-lg opacity-90">{icon}</div>
         <div className="flex-1">
-          <h3 className="text-sm font-medium text-gray-300 uppercase tracking-wide">{title}</h3>
-          <p className="text-2xl font-bold text-white">{value}</p>
-          {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
+          <h3 className="text-xs font-medium text-gray-300 uppercase tracking-wide">{title}</h3>
+          <p className="text-lg font-bold text-white">{value}</p>
+          {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
         </div>
       </div>
     </div>

@@ -287,58 +287,74 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MobileHeader onAddAnimal={() => alert('Fonctionnalité à venir')} />
+      <MobileHeader 
+        onAddAnimal={() => alert('Fonctionnalité Ajouter Animal à venir')} 
+        onMenuToggle={() => setIsMenuOpen(true)}
+      />
+      
+      <MobileMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+      />
       
       {/* Statistics Section */}
-      <div className="p-4 space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="p-4 space-y-4">
+        {/* Top Row */}
+        <div className="grid grid-cols-1 gap-4">
           <StatCard
             icon="🏠"
-            title="CHEPTEL TOTAL"
+            title="Cheptel Total"
             value={stats.total_livestock || 0}
-            subtitle="Animaux actifs"
-            color="bg-green-500"
+            subtitle="Animaux actifs dans l'élevage"
+            color="bg-gradient-to-r from-green-500 to-green-600"
+            className="col-span-1"
           />
+        </div>
+        
+        {/* Second Row */}
+        <div className="grid grid-cols-2 gap-4">
           <StatCard
             icon="🐔"
-            title="VOLAILLES"
+            title="Volailles"
             value={stats.poultry?.count || 0}
             subtitle="4 vague(s)"
-            color="bg-orange-500"
+            color="bg-gradient-to-r from-orange-500 to-orange-600"
           />
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
           <StatCard
             icon="🐷"
-            title="PORCINS"
+            title="Porcins"
             value={stats.pigs?.count || 0}
             subtitle="Élevage individuel"
-            color="bg-pink-500"
-          />
-          <StatCard
-            icon="♂️"
-            title="MÂLES"
-            value={stats.males || 0}
-            subtitle="Reproducteurs"
-            color="bg-blue-500"
+            color="bg-gradient-to-r from-pink-500 to-pink-600"
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
+        {/* Third Row */}
+        <div className="grid grid-cols-2 gap-4">
           <StatCard
-            icon="♀️"
-            title="FEMELLES"
-            value={stats.females || 0}
-            subtitle="Reproductrices"
-            color="bg-purple-500"
+            icon="♂️"
+            title="Mâles"
+            value={stats.males || 0}
+            subtitle="Reproducteurs"
+            color="bg-gradient-to-r from-blue-500 to-blue-600"
           />
           <StatCard
+            icon="♀️"
+            title="Femelles"
+            value={stats.females || 0}
+            subtitle="Reproductrices"
+            color="bg-gradient-to-r from-purple-500 to-purple-600"
+          />
+        </div>
+        
+        {/* Bottom Row */}
+        <div className="grid grid-cols-1 gap-4">
+          <StatCard
             icon="💰"
-            title="RENTABILITÉ"
-            value="3504444"
-            subtitle="FCFA - Bénéfice mensuel"
-            color="bg-green-600"
+            title="Rentabilité Mensuelle"
+            value="3,504,444 FCFA"
+            subtitle="Bénéfice net mensuel"
+            color="bg-gradient-to-r from-green-600 to-green-700"
           />
         </div>
       </div>
@@ -349,28 +365,38 @@ const Home = () => {
       {/* Animals List */}
       <div className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-xl font-bold text-gray-900">
             Liste des Animaux ({filteredAnimals.length})
           </h2>
         </div>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           {filteredAnimals.map((animal) => (
             <AnimalCard
               key={animal.id}
               animal={animal}
-              onEdit={() => alert('Fonctionnalité à venir')}
+              onEdit={() => alert('Fonctionnalité Modifier à venir')}
               onDelete={deleteAnimal}
             />
           ))}
         </div>
         
         {filteredAnimals.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Aucun animal trouvé avec ces filtres</p>
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🐄</div>
+            <p className="text-gray-500 text-lg">Aucun animal trouvé avec ces filtres</p>
+            <p className="text-gray-400 text-sm mt-2">Essayez de modifier vos critères de recherche</p>
           </div>
         )}
       </div>
+      
+      {/* Floating Action Button for Mobile */}
+      <button
+        onClick={() => alert('Fonctionnalité Ajouter Animal à venir')}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-green-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl active:scale-95 transform transition-transform lg:hidden"
+      >
+        +
+      </button>
     </div>
   );
 };

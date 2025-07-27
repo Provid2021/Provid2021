@@ -1689,6 +1689,9 @@ const Home = () => {
   const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
   const [isReproductionModalOpen, setIsReproductionModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState(null);
+  const [medicalReminders, setMedicalReminders] = useState([]);
 
   // Fetch data
   const fetchAnimals = async () => {

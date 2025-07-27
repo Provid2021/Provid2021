@@ -233,6 +233,33 @@ def main():
         # Test 14: Final stats check
         tester.test_get_updated_stats()
 
+        # Medical Records Tests (Phase 2)
+        print(f"\n🏥 Testing Medical Records Functionality (Phase 2)")
+        print("-" * 50)
+
+        # Test 15: Create medical record for chicken
+        if chicken_id:
+            medical_success, medical_response = tester.test_create_medical_record(chicken_id)
+            if not medical_success:
+                print("❌ Failed to create medical record")
+
+        # Test 16: Get medical records for chicken
+        if chicken_id:
+            tester.test_get_medical_records(chicken_id)
+
+        # Test 17: Test upcoming reminders
+        tester.test_get_upcoming_reminders()
+
+        # Test 18: Test creating medical record for invalid animal
+        tester.test_create_medical_record_invalid_animal()
+
+        # Test 19: Test that deleting animal also deletes medical records
+        if chicken_id:
+            print(f"\n🗑️ Testing medical record deletion with animal deletion")
+            tester.test_delete_animal(chicken_id)
+            # Try to get medical records for deleted animal (should return 404)
+            success, _ = tester.run_test("Get Medical Records - Deleted Animal", "GET", f"api/medical-records/{chicken_id}", 404)
+
     except KeyboardInterrupt:
         print("\n⚠️ Tests interrupted by user")
     except Exception as e:
